@@ -20,7 +20,8 @@ const config = {
     rules: {
         'no-prototype-builtins': 'off',
         'no-undef': 'off',
-        'no-useless-escape': 'off'
+        'no-useless-escape': 'off',
+        "react/jsx-filename-extension": [1, { "allow": "as-needed" }]
     }
 };
 

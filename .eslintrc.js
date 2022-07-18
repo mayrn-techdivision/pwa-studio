@@ -8,6 +8,7 @@ const config = {
         'no-prototype-builtins': 'off',
         'no-undef': 'off',
         'no-useless-escape': 'off',
+        "react/jsx-filename-extension": [1, { "allow": "as-needed" }],
         'react/jsx-no-literals': [
             'error',
             {
