@@ -7,10 +7,7 @@ const uniqueRootModules = [...new Set(rootModules)];
 
 const config = {
     parser: 'babel-eslint',
-    parserOptions: {
-        sourceType: 'script'
-    },
-    extends: ['@magento', 'plugin:node/recommended'],
+    extends: ['@magento'],
     plugins: ['babel', 'node'],
     settings: {
         node: {
@@ -22,7 +19,22 @@ const config = {
         'no-undef': 'off',
         'no-useless-escape': 'off',
         "react/jsx-filename-extension": [1, { "allow": "as-needed" }]
-    }
+    },
+    overrides: [
+        {
+            files: ['*.{ts,tsx}'],
+            parser: '@typescript-eslint/parser',
+            plugins: ['@typescript-eslint'],
+            extends: ['plugin:@typescript-eslint/recommended'],
+            rules: {
+                '@typescript-eslint/ban-ts-comment': 'off',
+                '@typescript-eslint/no-unused-vars': [
+                    'error',
+                    { ignoreRestSiblings: true }
+                ]
+            }
+        }
+    ]
 };
 
 module.exports = config;

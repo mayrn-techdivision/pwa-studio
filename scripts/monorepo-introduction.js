@@ -28,6 +28,8 @@ async function prepare() {
             .stdout
     );
 
+    return;
+
     const packagePath = name => path.resolve(root, packages[name].location);
 
     const buildpackCli = path.resolve(
