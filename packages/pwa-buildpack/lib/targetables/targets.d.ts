@@ -1,4 +1,5 @@
 import Target from '../BuildBus/Target';
+import { TransformRequest } from './TargetableModule';
 
 declare namespace Buildpack {
     interface EnvVarDefinition {
@@ -49,10 +50,13 @@ declare namespace Buildpack {
 
     type FeaturesByModule = Record<string, SpecialFeatures>
 
+    type AddTransformCallback = (request: TransformRequest) => void;
+
     declare interface Targets {
         '@magento/pwa-buildpack': {
             envVarDefinitions: Target<EnvVarDefs, void>;
             specialFeatures: Target<FeaturesByModule, void>;
+            transformModules: Target<AddTransformCallback, void>;
         };
     }
 }

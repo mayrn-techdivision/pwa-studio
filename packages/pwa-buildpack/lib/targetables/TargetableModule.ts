@@ -1,11 +1,5 @@
 import Trackable, { TrackingOwner } from '../BuildBus/Trackable';
-
-export const enum TransformType {
-    Source = 'source',
-    Babel = 'babel'
-}
-
-type TransformTypes = `${TransformType}`;
+import { TransformOptions, TransformRequest, TransformType, TransformTypes } from './types';
 
 type InsertSpliceSourceOptions = {
     insert: string;
@@ -30,15 +24,6 @@ type SpliceSourceAfterOptions = {
 }
 
 type SpliceSourceOptions = (SpliceSourceBeforeOptions | SpliceSourceAtOptions | SpliceSourceAfterOptions) & (InsertSpliceSourceOptions | RemoveSpliceSourceOptions | ReplaceSpliceSourceOptions);
-
-type TransformOptions = Record<string, unknown>;
-
-export interface TransformRequest {
-    type: TransformTypes,
-    fileToTransform: string,
-    transformModule: string,
-    options: TransformOptions
-}
 
 // type TransformType = TransformTypeEnum;
 
@@ -156,11 +141,14 @@ export default class TargetableModule extends Trackable {
     }
     /** @ignore */
     _createTransform(type: TransformTypes, transformModule: string, options: TransformOptions): TransformRequest {
+        // const traceContainer = {stack: ''}
+        const err = new Error('Error performing module transform');
         return {
             type,
             fileToTransform: this.file,
             transformModule,
-            options
+            options,
+            trace: err.stack ?? ''
         };
     }
 }

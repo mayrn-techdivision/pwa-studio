@@ -3,7 +3,9 @@
     "compilerOptions": {
         "composite": true,
         "target": "ES2020",
-        "lib": ["ES2020"],
+        "lib": [
+            "ES2020"
+        ],
         "allowJs": true,
         "skipLibCheck": true,
         "strict": true,
@@ -18,5 +20,13 @@
         "isolatedModules": true,
         "incremental": true
     },
-    "include": ["vite.config.ts"]
+    "references": [
+        {
+            "path": "../pwa-buildpack"
+        }
+    ],
+    "include": [
+        "vite.config.ts",
+        "package.json"
+    ]
 }

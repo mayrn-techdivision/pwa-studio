@@ -1,8 +1,56 @@
 import path from 'path';
-import fs from 'fs';
-// import { name as buildpackName } from '../package.json';
-import { TransformType } from './targetables/TargetableModule';
-import * as assert from 'assert';
+import { name as buildpackName } from '../package.json';
+import { TransformRequestWithRequestor as TransformRequest, TransformType, TransformTypes } from './targetables/types';
+
+type LoaderOptions = Record<TransformTypes, Record<string, Record<string, TransformRequest[]>>>;
+
+class CompositeError extends Error {
+    public originalErrors: (Error | unknown)[] = [];
+    private _stack?: string;
+    private _message?: string;
+
+    constructor(message?: string) {
+        super(message);
+        this.name = this.constructor.name;
+        this._message = message;
+        this._stack = this.stack;
+
+        Object.defineProperty(this, 'stack', {
+            get: function () {
+                return this._stack + '\n\n' + this.originalErrors?.map((e: Error | unknown) => e instanceof Error ? e.stack : e).join('\n');
+            },
+            set: function (value) {
+                this._stack = value;
+            }
+        });
+
+        Object.defineProperty(this, 'message', {
+            get: function () {
+                return this._message;
+            },
+        });
+
+
+        // standard way: Error.captureStackTrace(this, this.constructor.name);
+        // if you do this, you couldn't set different getter for the 'stack' property
+        // this._stack = new Error().stack; // do this, if you need a custom getter
+    }
+
+    //
+    // get stack() {
+    //     return 'extended ' + this._stack;
+    // }
+    //
+    // set stack(stack) {
+    //     this._stack = stack;
+    // }
+
+    get message() {
+        return 'extended ' + this._message;
+    }
+
+}
+
 
 /**
  * @typedef {function(TransformRequest)} addTransform
@@ -17,7 +65,7 @@ import * as assert from 'assert';
  */
 
 /** @enum {string} */
-const TransformTypes = {
+const TransformTypesTmp = {
     /**
      * Process the _source code_ of `fileToTransform` through the
      * `transformModule` as text. When applying a `source` TransformRequest,
@@ -66,19 +114,12 @@ const TransformTypes = {
  *   and/or Babel plugin options.._
  */
 
-interface TransformRequest {
-    type: TransformType;
-    transformModule: string;
-    fileToTransform: string;
-    requestor: string;
-}
-
 interface ResolverResult {
-    path: string;
+    id: string;
 }
 
 interface Resolver {
-    resolve: (path: string) => ResolverResult
+    resolve: (path: string) => Promise<ResolverResult | null>;
 }
 
 /**
@@ -94,11 +135,13 @@ interface Resolver {
  * which yields a structured object that configureWebpack can use to set up
  * loader and plugin configuration.
  */
-class ModuleTransformConfig {
+export default class ModuleTransformConfig {
     private _resolver: Resolver;
-    private _localProjectName: string;
+    private readonly _localProjectName: string;
     private _resolverChanges: any[];
-    private _needsResolved: any[];
+    private _needsResolved: (() => Promise<TransformRequest>)[];
+    private trustedVendors: string[];
+
     /**
      *
      * @static
@@ -108,9 +151,10 @@ class ModuleTransformConfig {
      * @param {string} localProjectName - The name of the PWA project being built, taken from the package.json `name` field.
      */
 
-    constructor(resolver: Resolver, localProjectName: string) {
+    constructor(resolver: Resolver, localProjectName: string, trustedVendors: string[] = []) {
         this._resolver = resolver;
         this._localProjectName = localProjectName;
+        this.trustedVendors = trustedVendors;
         // TODO: Currently nothing changes the resolver, but it will definitely
         // be necessary to deal with this in the future. Trust me, you want to
         // make sure successive transforms obey the rules that their predecessor
@@ -118,156 +162,167 @@ class ModuleTransformConfig {
         this._resolverChanges = [];
         this._needsResolved = [];
     }
+
     /**
      * @borrows addTransform as add
      */
-    // add(request: TransformRequest) {
-    //     if (!TransformTypes.hasOwnProperty(request.type)) {
-    //         throw this._traceableError(
-    //             `Unknown request type '${
-    //                 request.type
-    //             }' in TransformRequest: ${JSON.stringify(request)}`
-    //         );
-    //     }
-    //     this._needsResolved.push(this._resolveOrdinary(request));
-    // }
+    add(request: TransformRequest) {
+        if (!TransformTypesTmp.hasOwnProperty(request.type)) {
+            throw this._traceableError(
+                `Unknown request type '${
+                    request.type
+                }' in TransformRequest: ${JSON.stringify(request)}`,
+                request.trace
+            );
+        }
+        this._needsResolved.push(this._resolveRequest(request));
+    }
+
     /**
      * Resolve paths and emit as JSON.
      *
      * @returns {object} Configuration object
      */
-    // async toLoaderOptions() {
-    //     const byType = Object.values(TransformTypes).reduce(
-    //         (grouped, type) => ({
-    //             ...grouped,
-    //             [type]: {}
-    //         }),
-    //         {}
-    //     );
-    //     // Resolver still may need updating! Updates should be in order.
-    //     for (const resolverUpdate of this._resolverChanges) {
-    //         await resolverUpdate();
-    //     }
-    //     // Now the requests can be made using the finished resolver!
-    //     await Promise.all(
-    //         this._needsResolved.map(async (doResolve: () => TransformRequest) => {
-    //             const req = await doResolve();
-    //             // Split them up by the transform module to use.
-    //             // Several requests will share one transform instance.
-    //             const { type, transformModule, fileToTransform } = req;
-    //             const xformsForType = byType[type];
-    //             const filesForXform =
-    //                 xformsForType[transformModule] ||
-    //                 (xformsForType[transformModule] = {});
-    //             const requestsForFile =
-    //                 filesForXform[fileToTransform] ||
-    //                 (filesForXform[fileToTransform] = []);
-    //             requestsForFile.push(req);
-    //         })
-    //     );
-    //     return JSON.parse(JSON.stringify(byType));
-    // }
+    async toLoaderOptions() {
+        const byType = Object.values(TransformTypesTmp).reduce<LoaderOptions>(
+            (grouped, type) => ({
+                ...grouped,
+                [type]: {}
+            }),
+            {} as LoaderOptions
+        );
+        // Resolver still may need updating! Updates should be in order.
+        for (const resolverUpdate of this._resolverChanges) {
+            await resolverUpdate();
+        }
+        // Now the requests can be made using the finished resolver!
+        const requests = await Promise.all(
+            this._needsResolved.map((doResolve) => doResolve())
+        );
+
+        requests.reduce<LoaderOptions>((acc, req) => {
+            // Split them up by the transform module to use.
+            // Several requests will share one transform instance.
+            const { type, transformModule, fileToTransform } = req;
+            const transformModulesForType = (acc[type] ??= {});
+            const filesForTransformModule = (transformModulesForType[transformModule] ??= {});
+            const requestsForFile = (filesForTransformModule[fileToTransform] ??= []);
+            requestsForFile.push(req);
+
+            return acc;
+        }, {
+            babel: {},
+            source: {}
+        });
+
+        return JSON.parse(JSON.stringify(byType)) as LoaderOptions;
+    }
+
     /**
      * Prevent modules from transforming files from other modules.
      * Preserves encapsulation and maintainability.
      * @private
      */
-    // _assertAllowedToTransform(request: TransformRequest) {
-    //     const { requestor, fileToTransform } = request;
-    //     if (
-    //         !this._isLocal(requestor) && // Local project can modify anything
-    //         !this._isBuiltin(requestor) && // Buildpack itself can modify anything
-    //         !this._isTrustedExtensionVendor(requestor) && // Trusted extension vendors can modify anything
-    //         !fileToTransform.startsWith(requestor)
-    //     ) {
-    //         throw this._traceableError(
-    //             `Invalid fileToTransform path "${fileToTransform}": Extensions are not allowed to provide fileToTransform paths outside their own codebase! This transform request from "${requestor}" must provide a path to one of its own modules, starting with "${requestor}".`
-    //         );
-    //     }
-    // }
-    // _isBuiltin(requestor: string) {
-    //     return requestor === buildpackName;
-    // }
+    _assertAllowedToTransform(request: TransformRequest) {
+        const { requestor, fileToTransform } = request;
+        if (
+            !this._isLocal(requestor) && // Local project can modify anything
+            !this._isBuiltin(requestor) && // Buildpack itself can modify anything
+            !this._isTrustedExtensionVendor(requestor) && // Trusted extension vendors can modify anything
+            !fileToTransform.startsWith(requestor)
+        ) {
+            throw this._traceableError(
+                `Invalid fileToTransform path "${fileToTransform}": Extensions are not allowed to provide fileToTransform paths outside their own codebase! This transform request from "${requestor}" must provide a path to one of its own modules, starting with "${requestor}".`,
+                request.trace
+            );
+        }
+    }
+
+    _isBuiltin(requestor: string) {
+        return requestor === buildpackName;
+    }
+
     _isLocal(requestor: string) {
         return requestor === this._localProjectName;
     }
-    // _isTrustedExtensionVendor(requestor: string): boolean {
-    //     const vendors = this._getTrustedExtensionVendors();
-    //     const requestorVendor = requestor.split('/')[0];
-    //     return requestorVendor !== undefined && requestorVendor.length > 0 && vendors.includes(requestorVendor);
-    // }
-    // _getTrustedExtensionVendors() {
-    //     const configPath = path.resolve(process.cwd(), 'package.json');
-    //     if (!fs.existsSync(configPath)) {
-    //         return [];
-    //     }
-    //     const config = require(configPath)['pwa-studio'];
-    //     const configSectionName = 'trusted-vendors';
-    //     return config && config[configSectionName]
-    //         ? config[configSectionName]
-    //         : [];
-    // }
-    // _traceableError(msg) {
-    //     const capturedError = new Error(`ModuleTransformConfig: ${msg}`);
-    //     Error.captureStackTrace(capturedError, ModuleTransformConfig);
-    //     return new Error(capturedError.stack);
-    // }
+
+    _isTrustedExtensionVendor(requestor: string): boolean {
+        const requestorVendor = requestor.split('/')[0];
+        return requestorVendor !== undefined && requestorVendor.length > 0 && this.trustedVendors.includes(requestorVendor);
+    }
+
+    _traceableError(msg: string, trace: string) {
+        const capturedError = new Error(`ModuleTransformConfig: ${msg}`);
+        Error.captureStackTrace(capturedError, ModuleTransformConfig);
+        capturedError.stack = [capturedError.stack, trace].join("\n");
+        return capturedError;
+    }
+
     // Must throw a synchronous error so that .add() can throw early on a
     // disallowed module. So this is not an async function--instead it deals in
     // promise-returning function directly.
-    // _resolveOrdinary(request: TransformRequest) {
-    //     this._assertAllowedToTransform(request);
-    //     const transformModule = this._resolveNode(request, 'transformModule');
-    //     return () =>
-    //         this._resolveWebpack(request, 'fileToTransform').then(
-    //             fileToTransform => ({
-    //                 ...request,
-    //                 fileToTransform,
-    //                 transformModule
-    //             })
-    //         );
-    // }
-    // async _resolveWebpack(request, prop) {
-    //     const requestPath = request[prop];
-    //     // make module-absolute if relative
-    //     const toResolve = requestPath.startsWith('.')
-    //         ? path.join(request.requestor, requestPath)
-    //         : requestPath;
-    //     // Capturing in the sync phase so that a resolve failure is traceable.
-    //     const resolveError = this._traceableError(
-    //         `could not resolve ${prop} "${toResolve}" from requestor ${
-    //             request.requestor
-    //         } using Webpack rules.`
-    //     );
-    //     try {
-    //         const resolved = await this._resolver.resolve(toResolve);
-    //         return resolved;
-    //     } catch (e) {
-    //         resolveError.originalErrors = [e];
-    //         throw resolveError;
-    //     }
-    // }
-    // _resolveNode(request, prop) {
-    //     let nodeModule;
-    //     try {
-    //         nodeModule = require.resolve(request[prop]);
-    //     } catch (e) {
-    //         try {
-    //             nodeModule = require.resolve(
-    //                 path.join(request.requestor, request[prop])
-    //             );
-    //         } catch (innerE) {
-    //             const resolveError = this._traceableError(
-    //                 `could not resolve ${prop} ${
-    //                     request[prop]
-    //                 } from requestor ${request.requestor} using Node rules.`
-    //             );
-    //             resolveError.originalErrors = [e, innerE];
-    //             throw resolveError;
-    //         }
-    //     }
-    //     return nodeModule;
-    // }
-}
+    _resolveRequest(request: TransformRequest) {
+        this._assertAllowedToTransform(request);
+        const transformModule = this._resolveWebpack(request, 'transformModule');
+        const fileToTransform = this._resolveWebpack(request, 'fileToTransform');
+        return async () => {
+            return {
+                ...request,
+                fileToTransform: await fileToTransform,
+                transformModule: await transformModule
+            };
+        }
+    }
 
-module.exports = ModuleTransformConfig;
+    _resolveWebpack(request: TransformRequest, prop: Extract<keyof TransformRequest, 'transformModule' | 'fileToTransform'>) {
+        const requestPath = request[prop];
+        // make module-absolute if relative
+        const toResolve = requestPath.startsWith('.')
+            ? path.join(request.requestor, requestPath)
+            : requestPath;
+        // Capturing in the sync phase so that a resolve failure is traceable.
+        const resolveError = this._traceableError(
+            `could not resolve ${prop} "${toResolve}" from requestor ${
+                request.requestor
+            } using Vite rules.`, request.trace
+        );
+        return (async () => {
+            try {
+                const result = await this._resolver.resolve(toResolve);
+                if (result) {
+                    return result.id;
+                }
+            } catch (e) {
+                // @ts-ignore
+                resolveError.originalErrors = [e];
+                throw resolveError;
+            }
+            throw resolveError;
+        })()
+    }
+
+    _resolveNode(request: TransformRequest, prop: Extract<keyof TransformRequest, 'transformModule' | 'fileToTransform'>) {
+        let nodeModule;
+        try {
+            nodeModule = require.resolve(request[prop]);
+        } catch (e) {
+            try {
+                nodeModule = require.resolve(
+                    path.join(request.requestor, request[prop])
+                );
+            } catch (innerE) {
+                const resolveError = this._traceableError(
+                    `could not resolve ${prop} ${
+                        request[prop]
+                    } from requestor ${request.requestor} using Node rules.`,
+                    request.trace
+                );
+                // @ts-ignore
+                resolveError.originalErrors = [e, innerE];
+                // console.error(resolveError);
+                throw resolveError;
+            }
+        }
+        return nodeModule;
+    }
+}

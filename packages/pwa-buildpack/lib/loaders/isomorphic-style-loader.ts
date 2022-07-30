@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Derived from isomorphic-style-loader, property of Kriasoft and licensed under
  * the MIT license as defined in the following repository:
@@ -24,11 +25,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+import { stringifyRequest } from 'loader-utils';
 
-const { stringifyRequest } = require('loader-utils');
 
-module.exports = function loader() {};
-module.exports.pitch = function pitch(request) {
+export default function loader() {
+};
+
+export function pitch(request) {
     if (this.cacheable) {
         this.cacheable();
     }

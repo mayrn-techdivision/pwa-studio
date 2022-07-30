@@ -1,6 +1,7 @@
+// @ts-nocheck
 const Template = require('webpack/lib/Template');
 
-function wrapEsmLoader(content) {
+export default function wrapEsmLoader(content) {
     let ids = 0;
 
     const uniqueJsId = name =>
@@ -108,5 +109,3 @@ function wrapEsmLoader(content) {
     }
     this.callback(null, imports + '\n' + wrappedExports); //, finalSourceMap, ast);
 }
-
-module.exports = wrapEsmLoader;

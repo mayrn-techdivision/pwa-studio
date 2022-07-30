@@ -1,10 +1,9 @@
 import TargetableESModule from './TargetableESModule';
 import { OperationEnum, OperationParams } from './BabelModifyJSXPlugin/AbstractOperation';
-import { TransformType } from './TargetableModule';
+import { TransformType } from './types';
 
 const lazyImportString = `{ lazy as reactLazy } from 'react';\n`;
-const babelPluginPath =
-    '@magento/pwa-buildpack/lib/WebpackTools/targetables/BabelModifyJSXPlugin/index.js';
+const babelPluginPath = '@magento/pwa-buildpack/lib/targetables/BabelModifyJSXPlugin/index';
 
 /**
  * An ECMAScript module containing a React component with JSX to render it.
@@ -12,7 +11,7 @@ const babelPluginPath =
  * Presents a convenient API for consumers to add common transforms to React
  * components and the JSX in them, in a semantic way.
  */
-class TargetableReactComponent extends TargetableESModule {
+export default class TargetableReactComponent extends TargetableESModule {
     private _lazyComponents: Map<string, any> = new Map();
 
     /**
@@ -218,5 +217,3 @@ class TargetableReactComponent extends TargetableESModule {
         });
     }
 }
-
-module.exports = TargetableReactComponent;

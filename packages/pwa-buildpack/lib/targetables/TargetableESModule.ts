@@ -1,6 +1,7 @@
-import TargetableModule, { TransformType } from './TargetableModule';
+import TargetableModule  from './TargetableModule';
 
 import SingleImportStatement, { ImportStatementOrString } from './SingleImportStatement';
+import { TransformType } from './types';
 
 /**
  * An ECMAScript module that can be changed by a third party.
@@ -13,9 +14,6 @@ export default class TargetableESModule extends TargetableModule {
     protected readonly imports: Map<string, SingleImportStatement> = new Map();
     protected readonly bindings: Map<string, SingleImportStatement> = new Map();
 
-    constructor(...args: ConstructorParameters<typeof TargetableModule>) {
-        super(...args);
-    }
     /**
      * Adds a static import statement to the module source code, thus importing
      * a new dependency.

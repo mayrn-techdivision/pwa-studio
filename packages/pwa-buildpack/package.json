@@ -9,7 +9,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "tsc -p tsconfig.json --noEmit false",
-    "postbuild": "mkdir -p dist && cp -r tmp/dist/lib/* dist/",
+    "postbuild_": "mkdir -p dist && cp -r tmp/dist/lib/* dist/",
     "typecheck": "tsc -p tsconfig.json",
     "clean": " "
   },
@@ -17,8 +17,12 @@
     "dist"
   ],
   "type": "commonjs",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
+  "exports": {
+    ".": "./dist/lib/index.js",
+    "./*": "./dist/*"
+  },
   "repository": "github:magento/pwa-studio",
   "keywords": [
     "magento",
@@ -113,8 +117,8 @@
   },
   "pwa-studio": {
     "targets": {
-      "declare": "./dist/BuildBus/declare-base",
-      "intercept": "./dist/BuildBus/intercept-base"
+      "declare": "./lib/BuildBus/declare-base",
+      "intercept": "./lib/BuildBus/intercept-base"
     }
   }
 }

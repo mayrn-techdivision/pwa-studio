@@ -10,12 +10,7 @@ import SingleImportStatement, { ImportStatementOrString } from './SingleImportSt
  * Uses {@link https://github.com/magento/pwa-studio/blob/develop/packages/pwa-buildpack/lib/WebpackTools/loaders/export-esm-collection-loader.js|export-esm-collection-loader} to build source code.
  */
 export default class TargetableESModuleObject extends TargetableESModule {
-    private readonly errors: string[];
-
-    constructor(...args: ConstructorParameters<typeof TargetableESModule>) {
-        super(...args);
-        this.errors = [];
-    }
+    private readonly errors: string[] = [];
 
     /**
      * Adds a module to the object using the `addImport()` method from TargetableESModule.
@@ -64,7 +59,7 @@ export default class TargetableESModuleObject extends TargetableESModule {
             this.queuedTransforms.push(
                 this._createTransform(
                     'source',
-                    '@magento/pwa-buildpack/lib/WebpackTools/loaders/export-esm-collection-loader',
+                    '@magento/pwa-buildpack/lib/loaders/export-esm-collection-loader',
                     {
                         type: 'object',
                         bindings: [...this.bindings.keys()],

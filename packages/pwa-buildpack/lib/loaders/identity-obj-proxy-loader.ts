@@ -7,8 +7,6 @@
  * specifically in a target-testing scenario.
  */
 
-function identityObjProxyLoader() {
+export default function identityObjProxyLoader() {
     return 'exports = module.exports = require("identity-obj-proxy");';
 }
-
-module.exports = identityObjProxyLoader;

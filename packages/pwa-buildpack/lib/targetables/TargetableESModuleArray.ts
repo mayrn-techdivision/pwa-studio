@@ -1,5 +1,5 @@
 import TargetableESModule  from './TargetableESModule';
-import { TransformType } from './TargetableModule';
+import { TransformType } from './types';
 import { ImportStatementOrString } from './SingleImportStatement';
 
 /**
@@ -11,9 +11,7 @@ import { ImportStatementOrString } from './SingleImportStatement';
  */
 export default class TargetableESModuleArray extends TargetableESModule {
     private readonly orderedBindings: string[] = [];
-    constructor(...args: ConstructorParameters<typeof TargetableESModule>) {
-        super(...args);
-    }
+
     /**
      * Adds a module to the end of the array.
      *
@@ -74,7 +72,7 @@ export default class TargetableESModuleArray extends TargetableESModule {
             this.queuedTransforms.unshift(
                 this._createTransform(
                     TransformType.Source,
-                    '@magento/pwa-buildpack/lib/WebpackTools/loaders/export-esm-collection-loader',
+                    '@magento/pwa-buildpack/lib/loaders/export-esm-collection-loader',
                     {
                         type: 'array',
                         bindings: this.orderedBindings

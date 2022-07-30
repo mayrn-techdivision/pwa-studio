@@ -1,13 +1,14 @@
+// @ts-nocheck
 /**
  * Webpack loader for splicing source code as text, to do
  * simple and fast operations like prepending/appending.
  *
  * The power behind the "source" methods in [TargetableModule][].
  */
-const { inspect } = require('util');
+import { inspect } from 'util';
 
 class SpliceError extends Error {
-    constructor(message, instruction) {
+    constructor(message: string, instruction: unknown) {
         super(
             `Invalid splice instruction:\n\n${inspect(instruction, {
                 compact: false
@@ -28,12 +29,14 @@ const spliceSource = (source, index, insert, remove) => {
     return left + right;
 };
 
+// @ts-ignore
 const isNonNegativeInt = num => Number.isSafeInteger(num) && num >= 0;
+// @ts-ignore
 const isNonEmptyString = str => typeof str === 'string' && str.length > 0;
 
 const instructionTypes = ['after', 'at', 'before'];
 
-function spliceSourceLoader(content) {
+export default function spliceSourceLoader(content) {
     return this.query.reduce((source, instr) => {
         const nope = msg => {
             this.emitError(new SpliceError(msg, instr));
@@ -119,4 +122,4 @@ function spliceSourceLoader(content) {
     }, content);
 }
 
-module.exports = spliceSourceLoader;
+// module.exports = spliceSourceLoader;

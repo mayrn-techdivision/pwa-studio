@@ -6,6 +6,7 @@ import { createHtmlPlugin } from 'vite-plugin-html';
 // @ts-ignore
 // import pwaBuildpack from '@magento/pwa-buildpack';
 import { buildpackPlugin } from '@magento/pwa-buildpack';
+import packageJson from './package.json';
 
 // const { graphQL: { getMediaURL, getStoreConfigData, getAvailableStoresConfigData, getPossibleTypes } } = pwaBuildpack;
 //
@@ -62,7 +63,8 @@ export default defineConfig(async ({ mode }) => {
                 template: 'template.html',
                 entry: 'src/index.jsx'
             }),
-            buildpackPlugin({ magentoResolver: { mode, envDir: process.cwd() } })
+            // @ts-ignore
+            buildpackPlugin({ magentoResolver: { mode, envDir: process.cwd() }, buildbus: { projectName: packageJson.name, trustedVendors: packageJson['pwa-studio'].trustedVendors ?? [] } })
         ]
     });
 });

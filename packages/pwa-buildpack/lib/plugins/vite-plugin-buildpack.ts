@@ -1,10 +1,11 @@
 import buildpackMagentoResolverPlugin, { MagentoResolverConfig } from './vite-plugin-magento-resolver';
-import buildpackBuildBusPlugin from './vite-plugin-buildbus';
+import buildpackBuildBusPlugin, { BuildbusConfig } from './vite-plugin-buildbus';
 
 interface BuildpackConfig {
     magentoResolver: MagentoResolverConfig;
+    buildbus: BuildbusConfig
 }
 
-export default function buildpackPlugin({ magentoResolver }: BuildpackConfig) {
-    return [buildpackMagentoResolverPlugin(magentoResolver), buildpackBuildBusPlugin()];
+export default function buildpackPlugin({ magentoResolver, buildbus }: BuildpackConfig) {
+    return [buildpackMagentoResolverPlugin(magentoResolver), buildpackBuildBusPlugin(buildbus)];
 }

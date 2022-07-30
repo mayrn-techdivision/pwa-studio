@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Webpack loader for generating simple ES modules that aggregate and
  * re-export other modules.
@@ -10,7 +11,7 @@ const defaultExportStartsWith = (content, char) => {
     return exportMatch && exportMatch[1].charAt(0) === char;
 };
 
-function exportEsmCollectionLoader(content) {
+export default function exportEsmCollectionLoader(content) {
     const { bindings, type, errors = [] } = this.query[0];
     const [open, close] = type === 'array' ? ['[', ']'] : ['{', '}'];
 
@@ -47,5 +48,3 @@ function exportEsmCollectionLoader(content) {
 
     return `${preamble}${explanatory}\n\nexport default ${open}\n  ${exportList}\n${close};`;
 }
-
-module.exports = exportEsmCollectionLoader;
