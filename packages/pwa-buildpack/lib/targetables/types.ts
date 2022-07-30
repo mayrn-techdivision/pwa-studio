@@ -17,4 +17,5 @@ export interface TransformRequest {
 
 export interface TransformRequestWithRequestor extends TransformRequest{
     requestor: string;
+    requestorFile: string;
 }

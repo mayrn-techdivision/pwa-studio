@@ -25,6 +25,7 @@ export default class TargetProvider extends Trackable implements TargetProviderI
      * The phase currently being executed. Either `declare` or `intercept`.
      */
     phase: Phase | null;
+    file: string | null;
     name: string;
     types = types;
     private readonly getExternalTargets: GetExternalTargets;
@@ -41,13 +42,14 @@ export default class TargetProvider extends Trackable implements TargetProviderI
         this.getExternalTargets = getExternalTargets;
         this.name = depName;
         this.phase = null;
+        this.file = null;
     }
 
-    linkTarget(requestorName: string, targetName: string, tapable: AnyTapable) {
-        const TargetClass = requestorName === this.name ? Target : Target.External;
+    linkTarget(requestor: TargetProvider, targetName: string, tapable: AnyTapable) {
+        const TargetClass = requestor === this? Target : Target.External;
         return new TargetClass(
             this,
-            requestorName,
+            requestor,
             targetName,
             getTapableType(tapable),
             tapable
@@ -76,7 +78,7 @@ export default class TargetProvider extends Trackable implements TargetProviderI
                 tapableType: getTapableType(hook)
             });
             this.tapables[targetName] = hook;
-            this.own[targetName] = this.linkTarget(this.name, targetName, hook);
+            this.own[targetName] = this.linkTarget(this, targetName, hook);
         }
         return declarations;
     }

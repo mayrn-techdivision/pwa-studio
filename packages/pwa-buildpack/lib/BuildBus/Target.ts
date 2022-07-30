@@ -1,6 +1,6 @@
 import Trackable from './Trackable';
 import { TapableType } from './mapHooksToTargets';
-import { CompleteHook, TapableCallback, TapCallback, TapMethod, TapOptions } from './types';
+import { CompleteHook, InvokeTapOptions, TapableCallback, TapCallback, TapMethod, TapOptions } from './types';
 import TargetProvider from './TargetProvider';
 
 const interceptionTypes: Record<TapMethod, string> = {
@@ -12,7 +12,7 @@ const interceptionTypes: Record<TapMethod, string> = {
 export default class Target<T = unknown, R = unknown> extends Trackable {
     protected readonly owner: TargetProvider;
     protected readonly tapable: CompleteHook<T, R>;
-    protected readonly requestor: string;
+    protected readonly requestor: TargetProvider;
     protected readonly name: string;
     protected readonly type: TapableType;
     static External: typeof ExternalTarget;
@@ -21,7 +21,7 @@ export default class Target<T = unknown, R = unknown> extends Trackable {
         return '::';
     }
 
-    constructor(owner: TargetProvider, requestor: string, targetName: string, tapableType: TapableType, tapable: CompleteHook<T, R>) {
+    constructor(owner: TargetProvider, requestor: TargetProvider, targetName: string, tapableType: TapableType, tapable: CompleteHook<T, R>) {
         super();
         this.owner = owner;
         this.tapable = tapable;
@@ -34,38 +34,38 @@ export default class Target<T = unknown, R = unknown> extends Trackable {
     protected invokeTap<M extends TapMethod>(method: M, info: TapOptions<M, T, R> | string | TapCallback<M, T, R>, callback?: TapCallback<M, T, R>) {
         const [options, fn] = this.createTapOptions(info, callback);
         this.track('intercept', {
-            source: this.requestor,
+            source: this.requestor.name,
             type: interceptionTypes[method]
         });
         // @ts-ignore TODO: make typescript believe me that it's getting the right callback type
         return this.tapable[method](options, fn);
     }
 
-    private createTapOptions<M extends TapMethod>(info: TapOptions<M, T, R> | string | TapCallback<M, T, R>, fn?: TapCallback<M, T, R>): [Omit<TapOptions<M, T, R>, 'fn'>, TapCallback<M, T, R>] {
+    private createTapOptions<M extends TapMethod>(info: TapOptions<M, T, R> | string | TapCallback<M, T, R>, fn?: TapCallback<M, T, R>): [Omit<InvokeTapOptions<M, T, R>, 'fn'>, TapCallback<M, T, R>] {
         switch (typeof info) {
             case 'object': {
                 // a tapInfo object was passed! extract its name...
                 const { name, fn, ...otherInfo } = info;
                 return [
-                    { name: this.getTapName(name), ...otherInfo },
+                    { name: this.getTapName(name), ...otherInfo, file: this.requestor.file ?? '' },
                     fn
                 ];
             }
             case 'string': {
                 if (fn) {
-                    return [{ name: this.getTapName(info) }, fn];
+                    return [{ name: this.getTapName(info), file: this.requestor.file ?? '' }, fn];
                 }
                 break;
             }
             case 'function': {
-                return [{ name: this.getTapName() }, info];
+                return [{ name: this.getTapName(), file: this.requestor.file ?? '' }, info];
             }
         }
         throw new Error(`Could not create tap options from provided params: ${JSON.stringify([info, fn])}`);
     }
 
     private getTapName(name?: string) {
-        return name ? this.requestor + Target.SOURCE_SEP + name : this.requestor;
+        return name ? this.requestor.name + Target.SOURCE_SEP + name : this.requestor.name;
     }
 
 
@@ -120,7 +120,7 @@ export default class Target<T = unknown, R = unknown> extends Trackable {
     intercept(options: Parameters<CompleteHook<T, R>['intercept']>[0]) {
         this.track('intercept', {
             type: 'intercept',
-            source: this.requestor,
+            source: this.requestor.name,
             options
         });
         return this.tapable.intercept(options);

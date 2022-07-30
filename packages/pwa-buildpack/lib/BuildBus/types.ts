@@ -15,7 +15,7 @@ export enum TapMethod {
 export type Dep<T extends Phase> = Record<'name' | T, string>;
 
 export interface Targetable {
-    default: (targets: TargetProviderInterface) => void
+    default: (targets: TargetProviderInterface) => void;
 }
 
 export type CompleteHook<T, R> = Pick<Hook<T, R> & AsyncHook<T, R> & SyncHook<T, R>, 'tap' | 'tapAsync' | 'tapPromise' | 'intercept' | 'promise' | 'call' | 'callAsync'>;
@@ -28,6 +28,10 @@ export type TapCallback<M extends TapMethod, T = unknown, R = unknown> = Paramet
 export interface TapOptions<M extends TapMethod, T = unknown, R = unknown> {
     name: string;
     fn: TapCallback<M, T, R>;
+}
+
+export interface InvokeTapOptions<M extends TapMethod, T = unknown, R = unknown> extends TapOptions<M, T, R> {
+    file: string;
 }
 
 // type TapMethod = (options: TapOptions, fn?: TapCallback) => void

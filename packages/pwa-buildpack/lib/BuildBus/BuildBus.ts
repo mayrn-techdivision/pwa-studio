@@ -165,6 +165,7 @@ export default class BuildBus extends Trackable {
                 this.targetProviders.set(dep.name, targetProvider);
             }
             targetProvider.phase = phase;
+            targetProvider.file = dep[phase];
             this.track('loadDep', { phase, dep });
             const targetable = await import(dep[phase]);
             if (isTargetable(targetable)) {
@@ -173,6 +174,7 @@ export default class BuildBus extends Trackable {
                 this.depFiles.push(dep[phase]);
             }
             targetProvider.phase = null;
+            targetProvider.file = null;
         }
         console.groupEnd();
     }
@@ -190,13 +192,12 @@ export default class BuildBus extends Trackable {
     }
 
     private requestTargets(requestor: TargetProvider, requested: string) {
-        const source = requestor.name;
-        this.track('requestTargets', { source, requested });
+        this.track('requestTargets', { source: requestor.name, requested });
 
         const targets: Record<string, Target> = {};
         const targetProvider = this.getTargets(requested);
         for (const [name, tapable] of Object.entries(targetProvider.tapables)) {
-            targets[name] = targetProvider.linkTarget(source, name, tapable);
+            targets[name] = targetProvider.linkTarget(requestor, name, tapable);
         }
         return targets;
     }

@@ -15,6 +15,7 @@ import TargetProvider  from './TargetProvider';
 
 import Target from './Target';
 import { TransformRequest, TransformRequestWithRequestor } from '../targetables/types';
+import { InvokeTapOptions, TapMethod } from './types';
 export default (targets: TargetProvider) => {
     /**
      * @exports BuiltinTargets
@@ -205,7 +206,7 @@ export default (targets: TargetProvider) => {
          *
          * @ignore
          */
-        register: tapInfo => {
+        register: (tapInfo) => {
             /**
              * Get the requestor module out of the module name set by Target.
              * If something has cheated and directly tapped the underlying
@@ -213,6 +214,8 @@ export default (targets: TargetProvider) => {
              * resolve to a real module.
              */
             const requestor = tapInfo.name.split(Target.SOURCE_SEP)[0] ?? '';
+            // @ts-ignore
+            const requestorFile = (tapInfo as InvokeTapOptions<TapMethod>).file;
 
             // Reference to the original callback that the interceptor passed.
             const callback = tapInfo.fn;
@@ -227,7 +230,7 @@ export default (targets: TargetProvider) => {
                 fn: (requestTransform: (request: TransformRequestWithRequestor) => void, ...args: unknown[]) => {
                     // Ensure the request always has the right `requestor`.
                     const requestOwnModuleTransform = (request: TransformRequest) =>
-                        requestTransform({ ...request, requestor });
+                        requestTransform({ ...request, requestor, requestorFile });
                     // yoink!
                     return callback(requestOwnModuleTransform, ...args);
                 }
