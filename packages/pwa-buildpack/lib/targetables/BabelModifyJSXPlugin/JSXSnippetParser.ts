@@ -56,10 +56,10 @@ export default class JSXSnippetParser {
     parseElement(jsxSnippet: string) {
         try {
             const jsxNode = this.parseExpression(jsxSnippet);
-            // if (!this._babel.types.isJSXFragment(jsxNode)) {
-            // @ts-ignore will throw when not a JSXElement
-            this._babel.types.assertJSXElement(jsxNode as object, null);
-            // }
+            if (!this._babel.types.isJSXFragment(jsxNode)) {
+                // @ts-ignore will throw when not a JSXElement
+                this._babel.types.assertJSXElement(jsxNode);
+            }
             return jsxNode as JSXElement;
         } catch (e) {
             // @ts-ignore

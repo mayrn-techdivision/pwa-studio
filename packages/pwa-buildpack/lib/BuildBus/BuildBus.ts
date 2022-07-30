@@ -151,9 +151,9 @@ export default class BuildBus extends Trackable {
         console.group(`running phase "${phase}"`);
         const pertaining = this.getPertaining(phase);
         for (const dep of pertaining) {
-            if (dep.name !== '@magento/pwa-buildpack') {
-                continue;
-            }
+            // if (dep.name !== '@magento/pwa-buildpack') {
+            //     continue;
+            // }
             console.log(`loading target provider for "${dep.name}"`);
             let targetProvider = this.targetProviders.get(dep.name);
             if (!targetProvider) {

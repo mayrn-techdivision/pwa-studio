@@ -1,7 +1,7 @@
 const path = require('path');
 const packageRoot = path.resolve(__dirname, '../..');
 const glob = require('fast-glob');
-const Trackable = require('@magento/pwa-buildpack/lib/BuildBus/Trackable');
+const { Trackable } = require('@magento/pwa-buildpack');
 const TargetableHook = require('./TargetableHook');
 
 /**

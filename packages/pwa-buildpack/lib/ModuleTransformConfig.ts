@@ -2,7 +2,7 @@ import path from 'path';
 import { name as buildpackName } from '../package.json';
 import { TransformRequestWithRequestor as TransformRequest, TransformType, TransformTypes } from './targetables/types';
 
-type LoaderOptions = Record<TransformTypes, Record<string, Record<string, TransformRequest[]>>>;
+export type LoaderOptions = Record<TransformTypes, Record<string, Record<string, TransformRequest[]>>>;
 
 class CompositeError extends Error {
     public originalErrors: (Error | unknown)[] = [];
@@ -184,13 +184,6 @@ export default class ModuleTransformConfig {
      * @returns {object} Configuration object
      */
     async toLoaderOptions() {
-        const byType = Object.values(TransformTypesTmp).reduce<LoaderOptions>(
-            (grouped, type) => ({
-                ...grouped,
-                [type]: {}
-            }),
-            {} as LoaderOptions
-        );
         // Resolver still may need updating! Updates should be in order.
         for (const resolverUpdate of this._resolverChanges) {
             await resolverUpdate();
@@ -200,7 +193,7 @@ export default class ModuleTransformConfig {
             this._needsResolved.map((doResolve) => doResolve())
         );
 
-        requests.reduce<LoaderOptions>((acc, req) => {
+        const byType = requests.reduce<LoaderOptions>((acc, req) => {
             // Split them up by the transform module to use.
             // Several requests will share one transform instance.
             const { type, transformModule, fileToTransform } = req;
@@ -208,7 +201,6 @@ export default class ModuleTransformConfig {
             const filesForTransformModule = (transformModulesForType[transformModule] ??= {});
             const requestsForFile = (filesForTransformModule[fileToTransform] ??= []);
             requestsForFile.push(req);
-
             return acc;
         }, {
             babel: {},

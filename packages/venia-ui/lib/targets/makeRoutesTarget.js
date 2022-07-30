@@ -1,6 +1,6 @@
 function makeRoutesTarget(venia) {
     const routeList = venia.reactComponent(
-        '@magento/venia-ui/lib/components/Routes/routes.js',
+        '@magento/venia-ui/lib/components/Routes/routes.jsx',
         async ({ routes }, self) => addRoutes(self, await routes.promise([]))
     );
 
