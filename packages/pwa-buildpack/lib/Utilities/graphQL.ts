@@ -1,13 +1,15 @@
-const debug = require('../util/debug').makeFileLogger(__filename);
-
-const fetch = require('node-fetch');
-const graphQLQueries = require('../queries');
-const https = require('https');
+//@ts-nocheck
+import graphQLQueries from '../queries';
+import fetch from 'node-fetch';
+import https from 'https';
 
 // To be used with `node-fetch` in order to allow self-signed certificates.
+import { makeFileLogger } from '../util/debug';
+const debug = makeFileLogger(__filename);
+
 const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
-const fetchQuery = query => {
+export const fetchQuery = query => {
     const targetURL = new URL('graphql', process.env.MAGENTO_BACKEND_URL);
     const headers = {
         'Content-Type': 'application/json',
@@ -68,7 +70,7 @@ const fetchQuery = query => {
  *
  * @returns Promise that will resolve to the media backend url.
  */
-const getMediaURL = () => {
+export const getMediaURL = () => {
     return fetchQuery(graphQLQueries.getMediaUrl).then(
         data => data.storeConfig.secure_base_media_url
     );
@@ -80,7 +82,7 @@ const getMediaURL = () => {
  *
  * @returns Promise that will resolve to the store config data.
  */
-const getStoreConfigData = () => {
+export const getStoreConfigData = () => {
     return fetchQuery(graphQLQueries.getStoreConfigData).then(
         data => data.storeConfig
     );
@@ -91,14 +93,14 @@ const getStoreConfigData = () => {
  *
  * @returns Promise
  */
-const getAvailableStoresConfigData = () => {
+export const getAvailableStoresConfigData = () => {
     return fetchQuery(graphQLQueries.getAvailableStoresConfigData);
 };
 
 /**
  * Get the schema's types.
  */
-const getSchemaTypes = () => {
+export const getSchemaTypes = () => {
     return fetchQuery(graphQLQueries.getSchemaTypes);
 };
 
@@ -107,7 +109,7 @@ const getSchemaTypes = () => {
  *
  * Get only the Union and Interface types in the schema.
  */
-const getUnionAndInterfaceTypes = () => {
+export const getUnionAndInterfaceTypes = () => {
     return getSchemaTypes().then(data => {
         // Filter out any type information unrelated to unions or interfaces.
         const relevantData = data.__schema.types.filter(type => {
@@ -126,7 +128,7 @@ const getUnionAndInterfaceTypes = () => {
  * https://www.apollographql.com/docs/react/data/fragments/#generating-possibletypes-automatically
  * @returns {Object}  This object maps the name of an interface or union type (the supertype) to the types that implement or belong to it (the subtypes).
  */
-const getPossibleTypes = async () => {
+export const getPossibleTypes = async () => {
     const data = await getSchemaTypes();
 
     const possibleTypes = {};
@@ -141,12 +143,12 @@ const getPossibleTypes = async () => {
 
     return possibleTypes;
 };
-
-module.exports = {
-    getMediaURL,
-    getStoreConfigData,
-    getAvailableStoresConfigData,
-    getPossibleTypes,
-    getSchemaTypes,
-    getUnionAndInterfaceTypes
-};
+//
+// module.exports = {
+//     getMediaURL,
+//     getStoreConfigData,
+//     getAvailableStoresConfigData,
+//     getPossibleTypes,
+//     getSchemaTypes,
+//     getUnionAndInterfaceTypes
+// };

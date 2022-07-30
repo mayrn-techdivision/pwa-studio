@@ -11,7 +11,7 @@ const path = require('path');
  */
 const requireGraphQL = filePath => {
     const absolutePath = path.resolve(__dirname, filePath);
-    return stripComments(fs.readFileSync(absolutePath, { encoding: 'utf8' }));
+    return stripComments(fs.readFileSync(absolutePath.replace('/dist', ''), { encoding: 'utf8' }));
 };
 
 const singleLineCommentRegex = /(^#.*\n)/gm;
