@@ -3,7 +3,7 @@ import TargetableESModule from './TargetableESModule';
 import TargetableESModuleArray from './TargetableESModuleArray';
 import TargetableESModuleObject from './TargetableESModuleObject';
 import { Buildpack } from './targets';
-import TargetProvider from '../BuildBus/TargetProvider';
+import TargetProvider, { UndefinedTargets } from '../BuildBus/TargetProvider';
 import Targetables from './Targetables';
 import TargetableReactComponent from './TargetableReactComponent';
 import EnvVarDefinition = Buildpack.EnvVarDefinition;
@@ -13,21 +13,21 @@ import SpecialFeatures = Buildpack.SpecialFeatures;
 //     ReactComponent: require('./TargetableReactComponent')
 // };
 
-type TargetableCls<I extends TargetableModule
-    = TargetableModule> = new(...args: ConstructorParameters<typeof TargetableModule>) => I;
+type TargetableCls<T extends TargetableModule
+    = TargetableModule> = new(...args: ConstructorParameters<typeof TargetableModule>) => T;
 
-type PublishCallback = (...args: unknown[]) => unknown;
+type PublishCallback<T extends TargetableModule = TargetableModule> = (this: T, ownTargets: UndefinedTargets, self: T) => unknown;
 
-type Publisher = {
-    publish: PublishCallback
-} | PublishCallback;
+type Publisher<T extends TargetableModule = TargetableModule> = {
+    publish: PublishCallback<T>
+} | PublishCallback<T>;
 
-interface ModuleConfig {
+interface ModuleConfig<T extends TargetableModule = TargetableModule> {
     module: string;
-    publish: PublishCallback;
+    publish: PublishCallback<T>;
 }
 
-type Extant = [TargetableModule, ModuleConfig];
+type Extant<T extends TargetableModule = TargetableModule> = [T, ModuleConfig<T>];
 
 /**
  * A factory and manager for Targetable instances.
@@ -41,7 +41,8 @@ export default class TargetableSet extends Targetables<'@magento/pwa-buildpack'>
     static ESModuleObject = TargetableESModuleObject;
     static ReactComponent = TargetableReactComponent;
 
-    private _connectedFiles: Map<string, Extant> = new Map();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private _connectedFiles: Map<string, Extant<any>> = new Map();
 
     /**
      * Creates a new TargetableSet bound to a TargetProvider
@@ -66,7 +67,7 @@ export default class TargetableSet extends Targetables<'@magento/pwa-buildpack'>
      * the module will automatically bind to `builtins.transformModules`.
      * @returns {TargetableModule} Returns an instance of TargetableModule.
      */
-    module(modulePath: string, publisher: Publisher) {
+    module(modulePath: string, publisher: Publisher<TargetableModule>) {
         return this._provide(TargetableSet.Module, modulePath, publisher);
     }
 
@@ -77,7 +78,7 @@ export default class TargetableSet extends Targetables<'@magento/pwa-buildpack'>
      * the module will automatically bind to `builtins.transformModules`.
      * @returns {TargetableESModule} Returns an instance of TargetableESModule.
      */
-    esModule(modulePath: string, publisher: Publisher) {
+    esModule(modulePath: string, publisher: Publisher<TargetableESModule>) {
         return this._provide(TargetableSet.ESModule, modulePath, publisher);
     }
 
@@ -88,7 +89,7 @@ export default class TargetableSet extends Targetables<'@magento/pwa-buildpack'>
      * the module will automatically bind to `builtins.transformModules`.
      * @returns {TargetableESModuleArray} Returns an instance of TargetableESModuleArray.
      */
-    esModuleArray(modulePath: string, publisher: Publisher) {
+    esModuleArray(modulePath: string, publisher: Publisher<TargetableESModuleArray>) {
         return this._provide(TargetableSet.ESModuleArray, modulePath, publisher);
     }
 
@@ -99,7 +100,7 @@ export default class TargetableSet extends Targetables<'@magento/pwa-buildpack'>
      * the module will automatically bind to `builtins.transformModules`.
      * @returns {TargetableESModuleObject} Returns an instance of TargetableESModuleObject.
      */
-    esModuleObject(modulePath: string, publisher: Publisher) {
+    esModuleObject(modulePath: string, publisher: Publisher<TargetableESModuleObject>) {
         return this._provide(TargetableSet.ESModuleObject, modulePath, publisher);
     }
 
@@ -110,7 +111,7 @@ export default class TargetableSet extends Targetables<'@magento/pwa-buildpack'>
      * the module will automatically bind to `builtins.transformModules`.
      * @returns {TargetableReactComponent} Returns an instance of TargetableReactComponent
      */
-    reactComponent(modulePath: string, publisher: Publisher) {
+    reactComponent(modulePath: string, publisher: Publisher<TargetableReactComponent>) {
         return this._provide(TargetableSet.ReactComponent, modulePath, publisher);
     }
 
@@ -185,7 +186,7 @@ export default class TargetableSet extends Targetables<'@magento/pwa-buildpack'>
         );
     }
 
-    _normalizeConfig(modulePathOrConfig: string | ModuleConfig, publisher: Publisher): ModuleConfig {
+    _normalizeConfig<T extends TargetableModule>(modulePathOrConfig: string | ModuleConfig, publisher: Publisher<T>): ModuleConfig<T> {
         return typeof modulePathOrConfig === 'string'
             ? {
                 module: modulePathOrConfig,
@@ -194,9 +195,9 @@ export default class TargetableSet extends Targetables<'@magento/pwa-buildpack'>
             : modulePathOrConfig;
     }
 
-    _provide<T extends TargetableModule = TargetableModule>(Targetable: TargetableCls<T>, modulePath: string, publisher: Publisher) {
+    _provide<T extends TargetableModule = TargetableModule>(Targetable: TargetableCls<T>, modulePath: string, publisher: Publisher<T>) {
         const config = this._normalizeConfig(modulePath, publisher);
-        let extant = this._connectedFiles.get(config.module);
+        let extant = this._connectedFiles.get(config.module) as Extant<T>|undefined;
         if (!extant) {
             const targetable = new Targetable(
                 config.module,
