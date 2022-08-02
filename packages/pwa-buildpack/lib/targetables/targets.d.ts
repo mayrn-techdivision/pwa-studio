@@ -43,6 +43,7 @@ declare namespace Buildpack {
     interface SpecialFeatures {
         cssModules?: boolean;
         esModules?: boolean;
+        rootComponents?: boolean;
         graphqlQueries?: boolean;
         upward?: boolean;
         i18n?: boolean;

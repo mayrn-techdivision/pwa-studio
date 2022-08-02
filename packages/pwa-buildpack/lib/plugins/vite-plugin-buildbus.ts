@@ -3,11 +3,15 @@ import BuildBus from '../BuildBus/BuildBus';
 import getSpecialFlags from '../util/getSpecialFlags';
 import ModuleTransformConfig, { LoaderOptions } from '../ModuleTransformConfig';
 import buildBusBabelLoader from '../loaders/buildbus-babel-loader';
-import path from 'path';
 
 export interface BuildbusConfig {
     projectName: string;
     trustedVendors?: string[];
+}
+
+interface BabelResult {
+    code: string;
+    sourceMap: string;
 }
 
 // noinspection JSUnusedGlobalSymbols
@@ -39,11 +43,13 @@ export default async function buildpackBuildBusPlugin(
             transformRequests = await transforms.toLoaderOptions();
 
             console.log('packages with flag "esModules":', hasFlag('esModules'));
+            console.log('packages with flag "rootComponents":', hasFlag('rootComponents'));
 
             // console.log(transformRequests.source['/Volumes/workspace/Experiments/pwa-studio/packages/pwa-buildpack/dist/lib/loaders/splice-source-loader.js']?.['/Volumes/workspace/Experiments/pwa-studio/packages/venia-ui/lib/RootComponents/Shimmer/types/index.js']);
         },
-        async transform(code, id, options) {
+        async transform(code, id) {
             let transformedCode = code;
+            let sourceMap = undefined;
             for (const [loaderPath, loaderTransforms] of Object.entries(transformRequests.source)) {
                 const transforms = loaderTransforms[id];
                 if (transforms) {
@@ -70,41 +76,44 @@ export default async function buildpackBuildBusPlugin(
                     const query = {
                         test: id,
                         presets: ['@babel/preset-react'],
-                        plugins: [[pluginPath, { requestsByFile }]]
+                        plugins: [[pluginPath, { requestsByFile }]],
+                        sourceMaps: true,
+                        sourceFileName: id,
                     };
 
-                    const babelPromise = new Promise<string>((resolve, reject) => {
+                    const babelResult = await new Promise<BabelResult>((resolve, reject) => {
                         buildBusBabelLoader.call({
                             query,
                             emitError: console.error,
                             emitWarning: console.warn,
                             resourcePath: id,
                             addDependency: (dep: string) => console.log('Adding dependency: ', dep),
-                            async: () => (error?: Error, result?: string, maybeSourceMap?: unknown) => {
-                                if (error || !result) {
+                            async: () => (error?: Error, result?: string, babelSourceMap?: string) => {
+                                if (error || !result || !babelSourceMap) {
                                     reject(error ?? 'An unknown error occurred while trying to perform babel transforms.');
                                     return;
                                 }
-                                resolve(result)
+                                resolve({ code: result, sourceMap: babelSourceMap });
                             }
                         }, transformedCode);
-                    })
+                    });
 
                     try {
-                        transformedCode = await babelPromise;
+                        transformedCode = babelResult.code;
+                        sourceMap = babelResult.sourceMap;
                     } catch (error) {
-                        console.error(`[Buildpack:BuildBus] Error while performing Babel transform for "${id}":`, error)
+                        console.error(`[Buildpack:BuildBus] Error while performing Babel transform for "${id}":`, error);
                     }
                 }
             }
             if (code !== transformedCode) {
                 return {
                     code: transformedCode,
-                    map: { mappings: '' }
+                    map: sourceMap ?? { mappings: '' }
                 };
             }
         },
-        async watchChange(id, change) {
+        async watchChange(id) {
             if (bus.depFiles.includes(id)) {
                 console.log('depFile changed:', id);
             } else {
