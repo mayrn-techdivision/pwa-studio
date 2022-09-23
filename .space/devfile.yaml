@@ -15,7 +15,7 @@ components:
               # by default, projectRoot is repository root
               #buildContext: docker
               # (Required) path to Dockerfile relative to projectRoot
-              uri: dev.dockerfile
+              uri: space.dockerfile
 #components:
 #    -   name: ubuntu-container
 #        container:
