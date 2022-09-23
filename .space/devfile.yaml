@@ -13,7 +13,7 @@ components:
           dockerfile:
               # (Optional) path to Docker context relative to projectRoot
               # by default, projectRoot is repository root
-              buildContext: docker
+              #buildContext: docker
               # (Required) path to Dockerfile relative to projectRoot
               uri: dev.dockerfile
 #components:
