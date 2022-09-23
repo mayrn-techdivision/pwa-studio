@@ -1,1 +1,1 @@
-export { default } from './guestSignIn.js';
+export { default } from './guestSignIn';
