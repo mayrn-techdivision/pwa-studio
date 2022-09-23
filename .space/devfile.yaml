@@ -3,6 +3,7 @@ metadata:
     name: 'Main DevFile'
 attributes:
     space:
+        instanceType: large
         editor:
             type: PhpStorm
 #components:
