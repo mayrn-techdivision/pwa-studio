@@ -1,0 +1,34 @@
+schemaVersion: 2.2.0
+metadata:
+    name: 'Main DevFile'
+attributes:
+    space:
+        editor:
+            type: PhpStorm
+components:
+    - name: image-build
+      image:
+            # (Required)
+          imageName: my-image:latest
+          dockerfile:
+              # (Optional) path to Docker context relative to projectRoot
+              # by default, projectRoot is repository root
+              buildContext: docker
+              # (Required) path to Dockerfile relative to projectRoot
+              uri: dev.dockerfile
+#components:
+#    -   name: ubuntu-container
+#        container:
+#            image: mycompany.registry.jetbrains.space/p/crl/container/dev-image:latest
+#    -   name: image-build
+#        container:
+#            imageName: my-image:latest
+#            dockerfile:
+#                # (Optional) path to Docker context relative to projectRoot
+#                # by default, projectRoot is repository root
+#                buildContext: docker
+#                # (Required) path to Dockerfile relative to projectRoot
+#                uri: dev.dockerfile
+#                args:
+#                    - 'ARG1=A'
+#                    - 'ARG2=B'
