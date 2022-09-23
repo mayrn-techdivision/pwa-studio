@@ -3,5 +3,6 @@
 job("Build PhpStorm indexes") {
     warmup(ide = Ide.PhpStorm) {
         devfile = ".space/devfile.yaml"
+        scriptLocation = ".space/warmup.sh
     }
 }
