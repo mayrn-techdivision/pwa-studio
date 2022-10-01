@@ -91,13 +91,13 @@ module.exports = async env => {
         process.env.npm_lifecycle_event &&
         process.env.npm_lifecycle_event.includes('watch')
     ) {
-        const devTemplate = await getCleanTemplate('./template.html');
+        const devTemplate = await getCleanTemplate('./index.html');
 
         // Generate new gitignored html file based on the cleaned template
         await writeFile('template.generated.html', devTemplate);
         htmlWebpackConfig.template = './template.generated.html';
     } else {
-        htmlWebpackConfig.template = './template.html';
+        htmlWebpackConfig.template = './index.html';
     }
 
     config.module.noParse = [

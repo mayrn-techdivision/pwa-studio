@@ -1,4 +1,4 @@
-import { defineConfig,loadEnv } from 'vite';
+import { defineConfig,loadEnv, UserConfig } from 'vite';
 import { createHtmlPlugin } from 'vite-plugin-html';
 // @ts-ignore
 import { buildpackPlugin } from '@magento/pwa-buildpack';
@@ -11,7 +11,7 @@ const importerFactory = `function () {
             }
         }`;
 
-export default defineConfig(async ({ mode }) => {
+export default defineConfig(async ({ mode }): Promise<UserConfig> =>  {
     Object.assign(process.env, loadEnv(mode, process.cwd(), ''));
     // @ts-ignore
     const { getMediaURL, getStoreConfigData, getAvailableStoresConfigData, getPossibleTypes } = await import('@magento/pwa-buildpack/lib/Utilities/graphQL.js');
@@ -52,17 +52,18 @@ export default defineConfig(async ({ mode }) => {
             DEFAULT_COUNTRY_CODE: JSON.stringify(
                 process.env.DEFAULT_COUNTRY_CODE || 'US'
             ),
-            __DEV__: process.env.NODE_ENV !== 'production',
+            __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
             __fetchLocaleData__: `(${importerFactory})()`,
-            global: 'window' // TODO: fix jarallax error due to global being undefined
+            global: 'globalThis' // TODO: fix jarallax error due to global being undefined
         },
         server: {
-            host: 'mumzworld.pwa',
+            host: '127.0.0.1',
             port: 8080,
         },
+
         plugins: [
             createHtmlPlugin({
-                template: 'template.html',
+                template: 'index.html',
                 entry: 'src/index.jsx'
             }),
             buildpackPlugin({ magentoResolver: { mode, envDir: process.cwd() },
@@ -72,6 +73,6 @@ export default defineConfig(async ({ mode }) => {
                     trustedVendors: packageJson['pwa-studio'].trustedVendors ?? []
                 }
             })
-        ]
+        ],
     });
 });
