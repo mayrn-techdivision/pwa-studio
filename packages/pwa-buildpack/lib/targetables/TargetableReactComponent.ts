@@ -12,7 +12,7 @@ const babelPluginPath = '@magento/pwa-buildpack/lib/targetables/BabelModifyJSXPl
  * components and the JSX in them, in a semantic way.
  */
 export default class TargetableReactComponent extends TargetableESModule {
-    private _lazyComponents: Map<string, any> = new Map();
+    protected lazyComponents: Map<string, string> = new Map();
 
     /**
      * Add a CSS classname to a JSX element. Unlike setting the className prop,
@@ -42,26 +42,34 @@ export default class TargetableReactComponent extends TargetableESModule {
      * @returns {string} Name of the local binding of the element, to be used in JSX operations.
      */
     addReactLazyImport(modulePath: string, localName = 'Component') {
-        // Dedupe
-        const alreadyAdded = this._lazyComponents.get(modulePath);
-        if (alreadyAdded) {
-            return alreadyAdded;
-        }
         const elementName = this.uniqueIdentifier(
             'Dynamic' + localName.replace(/[\s-\.,]/g, '')
         );
-        if (this._lazyComponents.size === 0) {
+        return this._addActualReactLazyImport(modulePath, elementName);
+    }
+
+    protected _addActualReactLazyImport(modulePath: string, elementName: string) {
+        // Dedupe
+        const alreadyAdded = this.lazyComponents.get(modulePath);
+        if (alreadyAdded) {
+            return alreadyAdded;
+        }
+
+        if (this.lazyComponents.size === 0) {
             // first one! add the known binding to lazy, so that we don't have
             // to count on someone else's React import statement.
             this.addImport(lazyImportString);
         }
-        this._lazyComponents.set(modulePath, elementName);
+
+        this.lazyComponents.set(modulePath, elementName);
+
         this.insertAfterSource(
             lazyImportString,
             `const ${elementName} = reactLazy(() => import('${modulePath}'));\n`
         );
         return elementName;
     }
+
     /**
      * Append a JSX element to the children of `element`.
      *

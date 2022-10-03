@@ -8,6 +8,7 @@ import Targetables from './Targetables';
 import TargetableReactComponent from './TargetableReactComponent';
 import EnvVarDefinition = Buildpack.EnvVarDefinition;
 import SpecialFeatures = Buildpack.SpecialFeatures;
+import TargetableLazyModuleObject from './TargetableLazyModuleObject';
 
 // const types = {
 //     ReactComponent: require('./TargetableReactComponent')
@@ -42,6 +43,7 @@ export default class TargetableSet<N extends TargetsId = string> extends Targeta
     static ESModuleArray = TargetableESModuleArray;
     static ESModuleObject = TargetableESModuleObject;
     static ReactComponent = TargetableReactComponent;
+    static LazyModuleObject = TargetableLazyModuleObject;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _connectedFiles: Map<string, Extant<any>> = new Map();
@@ -116,6 +118,19 @@ export default class TargetableSet<N extends TargetsId = string> extends Targeta
     reactComponent(...configParams: ModuleConfigParams<TargetableReactComponent, N>) {
         return this._provide(TargetableSet.ReactComponent, ...configParams);
     }
+
+
+    /**
+     * @param {string} modulePath - Path to the module file this Targetable represents.
+     * @param {TargetablePublisher} [publisher] - Callback function to execute when this module
+     * is about to commit its requested transforms to a build. If this function is passed,
+     * the module will automatically bind to `builtins.transformModules`.
+     * @returns {TargetableESModuleObject} Returns an instance of TargetableESModuleObject.
+     */
+    lazyModuleObject(...configParams: ModuleConfigParams<TargetableLazyModuleObject, N>) {
+        return this._provide(TargetableSet.LazyModuleObject, ...configParams);
+    }
+
 
     //
     // /**
