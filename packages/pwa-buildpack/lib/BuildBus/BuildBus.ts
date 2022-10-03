@@ -133,6 +133,12 @@ export default class BuildBus extends Trackable {
         await this.runPhase(Phase.Intercept);
     }
 
+    reset() {
+        this.hasRun.clear();
+        this.targetProviders.clear();
+        this.depFiles = [];
+    }
+
     /**
      * Run the specified phase. The BuildBus finds all dependencies which say
      * in their `package.json` that they need to run code in this phase.
