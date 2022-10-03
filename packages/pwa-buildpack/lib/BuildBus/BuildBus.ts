@@ -10,7 +10,7 @@ const packageJsonPath = (phase: Phase) => {
 };
 
 const isModuleWithDefaultExport = (module: unknown): module is Record<'default', unknown> =>
-    module != null && typeof module === 'object' && module.hasOwnProperty('default');
+    module != null && typeof module === 'object' && Object.hasOwnProperty.call(module, 'default');
 
 const isTargetable = (targetable: unknown): targetable is Targetable => {
     if (isModuleWithDefaultExport(targetable) && typeof targetable.default === 'function') {
@@ -148,13 +148,8 @@ export default class BuildBus extends Trackable {
         }
         this.hasRun.add(phase);
         this.track('runPhase', { phase });
-        console.group(`running phase "${phase}"`);
         const pertaining = this.getPertaining(phase);
         for (const dep of pertaining) {
-            // if (dep.name !== '@magento/pwa-buildpack') {
-            //     continue;
-            // }
-            console.log(`loading target provider for "${dep.name}"`);
             let targetProvider = this.targetProviders.get(dep.name);
             if (!targetProvider) {
                 targetProvider = new TargetProvider(
@@ -169,7 +164,7 @@ export default class BuildBus extends Trackable {
             this.track('loadDep', { phase, dep });
             const targetable = await import(dep[phase]);
             if (isTargetable(targetable)) {
-                console.log(`${phase}ing targets for "${dep.name}"`);
+                console.log(`Running phase ${phase} for "${dep.name}"`);
                 targetable.default(targetProvider);
                 this.depFiles.push(dep[phase]);
             }
