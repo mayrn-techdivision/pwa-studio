@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client';
-import { ShippingInformationFragment } from '@magento/peregrine/lib/talons/CheckoutPage/ShippingInformation/shippingInformationFragments.gql.js';
+import { ShippingInformationFragment } from '@magento/peregrine/lib/talons/CheckoutPage/ShippingInformation/shippingInformationFragments.gql';
 import { CartPageFragment } from '../../cartPageFragments.gql';
 import { ShippingMethodsCartFragment } from './shippingMethodsFragments.gql';
 

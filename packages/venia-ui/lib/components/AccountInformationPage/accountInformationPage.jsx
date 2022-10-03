@@ -9,7 +9,7 @@ import { StoreTitle } from '../Head';
 import { fullPageLoadingIndicator } from '../LoadingIndicator';
 
 import defaultClasses from './accountInformationPage.module.css';
-import AccountInformationPageOperations from './accountInformationPage.gql.js';
+import AccountInformationPageOperations from './accountInformationPage.gql';
 
 const EditModal = React.lazy(() => import('./editModal'));
 

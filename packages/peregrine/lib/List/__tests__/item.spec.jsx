@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Item } from '../index.js';
+import { Item } from '../index';
 import createTestInstance from '../../util/createTestInstance';
 
 const classes = { root: 'abc' };

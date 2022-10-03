@@ -25,7 +25,7 @@ import { useEventingContext } from '../../context/eventing';
  * @returns {CreateAccountProps}
  *
  * @example <caption>Importing into your project</caption>
- * import { useForgotPassword } from '@magento/peregrine/lib/talons/CreateAccount/useCreateAccount.js';
+ * import { useForgotPassword } from '@magento/peregrine/lib/talons/CreateAccount/useCreateAccount';
  */
 export const useCreateAccount = props => {
     const { initialValues = {}, onSubmit, onCancel } = props;

@@ -14,7 +14,7 @@ import { useGoogleReCaptcha } from '@magento/peregrine/lib/hooks/useGoogleReCapt
  * @returns {ForgotPasswordProps}
  *
  * @example <caption>Importing into your project</caption>
- * import { useForgotPassword } from '@magento/peregrine/lib/talons/ForgotPassword/useForgotPassword.js';
+ * import { useForgotPassword } from '@magento/peregrine/lib/talons/ForgotPassword/useForgotPassword';
  */
 export const useForgotPassword = props => {
     const { onCancel, mutations } = props;

@@ -1,5 +1,5 @@
 import { useLazyQuery } from '@apollo/client';
-import { GET_EXTENSION_CONTEXT } from '../queries/getExtensionContext.js';
+import { GET_EXTENSION_CONTEXT } from '../queries/getExtensionContext';
 import { useEffect } from 'react';
 
 const useExtensionContext = () => {

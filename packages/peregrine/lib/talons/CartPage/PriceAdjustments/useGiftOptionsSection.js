@@ -2,7 +2,7 @@ import { useQuery } from '@apollo/client';
 
 import mergeOperations from '@magento/peregrine/lib/util/shallowMerge';
 
-import DEFAULT_OPERATIONS from './giftOptionsSection.gql.js';
+import DEFAULT_OPERATIONS from './giftOptionsSection.gql';
 
 /**
  * This talon fetches the gift options section data.

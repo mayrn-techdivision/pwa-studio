@@ -12,7 +12,7 @@ import { useGoogleReCaptcha } from '@magento/peregrine/lib/hooks/useGoogleReCapt
  * @returns {ResetPasswordProps} - GraphQL mutations for the reset password form.
  *
  * @example <caption>Importing into your project</caption>
- * import { useResetPassword } from '@magento/peregrine/lib/talons/MyAccount/useResetPassword.js';
+ * import { useResetPassword } from '@magento/peregrine/lib/talons/MyAccount/useResetPassword';
  */
 export const useResetPassword = props => {
     const { mutations } = props;

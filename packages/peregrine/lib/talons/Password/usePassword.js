@@ -6,7 +6,7 @@ import { useCallback, useState } from 'react';
  * @returns {PasswordProps}
  *
  * @example <caption>Importing into your project</caption>
- * import { usePassword } from '@magento/peregrine/lib/talons/Password/usePassword.js';
+ * import { usePassword } from '@magento/peregrine/lib/talons/Password/usePassword';
  */
 export const usePassword = () => {
     const [visible, setVisbility] = useState(false);

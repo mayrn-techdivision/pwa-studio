@@ -12,7 +12,7 @@ import { useCartContext } from '../../context/cart';
 
 import mergeOperations from '../../util/shallowMerge';
 
-import DEFAULT_OPERATIONS from './checkoutPage.gql.js';
+import DEFAULT_OPERATIONS from './checkoutPage.gql';
 
 import CheckoutError from './CheckoutError';
 import { useGoogleReCaptcha } from '../../hooks/useGoogleReCaptcha';
