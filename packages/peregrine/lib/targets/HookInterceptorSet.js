@@ -1,8 +1,12 @@
-const path = require('path');
+import path from 'path';
+import { fileURLToPath } from 'url';
+import glob from 'fast-glob';
+import { Trackable } from '@magento/pwa-buildpack';
+import TargetableHook from './TargetableHook';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const packageRoot = path.resolve(__dirname, '../..');
-const glob = require('fast-glob');
-const { Trackable } = require('@magento/pwa-buildpack');
-const TargetableHook = require('./TargetableHook');
 
 /**
  * Builds a registry of modules existing in a given directory by walking the
@@ -10,7 +14,7 @@ const TargetableHook = require('./TargetableHook');
  * `hooks` targets. Because it reads the filesystem, it's no longer necessary
  * to manually maintain a list of supported hooks and talons.
  */
-class HookInterceptorSet extends Trackable {
+export default class HookInterceptorSet extends Trackable {
     /**
      * Direct access to the array of all generated hooks. Used for retrieving all the transform requests.
      * @type {TransformRequest[]}
@@ -19,6 +23,7 @@ class HookInterceptorSet extends Trackable {
     get allModules() {
         return this._all;
     }
+
     /**
      * Creates a HookInterceptorSet that will look for modules in a folder tree.
      * @param {string} hookFolder - Absolute path to the base folder to check recursively for hooks.
@@ -31,6 +36,7 @@ class HookInterceptorSet extends Trackable {
         this._target = target;
         this.attach(this.constructor.name, target);
     }
+
     /**
      * Create a nested object structure mirroring the filesystem structure, so
      * that CartPage/GiftCards/useGiftCard.js is available at
@@ -47,6 +53,7 @@ class HookInterceptorSet extends Trackable {
         }
         return current;
     }
+
     /**
      * Reads the filesystem, starting at the base directory passed into the
      * constructor. Uses this data to build up a namespaced API object that
@@ -55,14 +62,14 @@ class HookInterceptorSet extends Trackable {
      *
      */
     async populate() {
-        this.track('prepopulate', { status: `reading ${this._hookDir}` });
+        this.track('prepopulate', {status: `reading ${this._hookDir}`});
         const hookPaths = await glob('**/use*.{mjs,js,mts,ts}', {
             cwd: this._hookDir,
             ignore: ['**/__*__/**'],
             suppressErrors: true,
             onlyFiles: true
         });
-        this.track('populate', { count: hookPaths.length, hookPaths });
+        this.track('populate', {count: hookPaths.length, hookPaths});
         for (const hookPath of hookPaths) {
             const isNested = hookPath.includes(path.sep);
             const segments = isNested
@@ -78,13 +85,14 @@ class HookInterceptorSet extends Trackable {
                         path.resolve(this._hookDir, hookPath)
                     )
                 ),
-                { exportName: hookName },
+                {exportName: hookName},
                 this
             );
             namespace[hookName] = targetedHook;
             this._all.push(targetedHook);
         }
     }
+
     /**
      * Generate the namespaced API with HookInterceptorSet#populate and call
      * `this._target` asynchronously to run third-party interceptors.
@@ -96,5 +104,3 @@ class HookInterceptorSet extends Trackable {
         await this._target.promise(this);
     }
 }
-
-module.exports = HookInterceptorSet;

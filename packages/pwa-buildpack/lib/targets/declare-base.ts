@@ -11,11 +11,11 @@
  *
  * @memberof @magento/pwa-buildpack
  */
-import TargetProvider  from './TargetProvider';
+import TargetProvider  from '../BuildBus/TargetProvider';
 
-import Target from './Target';
+import Target from '../BuildBus/Target';
 import { TransformRequest, TransformRequestWithRequestor } from '../targetables/types';
-import { InvokeTapOptions, TapMethod } from './types';
+import { InvokeTapOptions, TapMethod } from '../BuildBus/types';
 export default (targets: TargetProvider) => {
     /**
      * @exports BuiltinTargets

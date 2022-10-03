@@ -5,6 +5,7 @@
     "access": "public"
   },
   "description": "Venia PWA UI modules for use by other projects",
+  "type": "module",
   "main": "lib/index.js",
   "browser": {
     "@magento/venia-drivers": "./lib/drivers"

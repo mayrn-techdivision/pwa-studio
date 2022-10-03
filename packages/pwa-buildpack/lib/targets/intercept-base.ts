@@ -1,6 +1,7 @@
 /** @ignore */
-import TargetProvider from './TargetProvider';
+import TargetProvider from '../BuildBus/TargetProvider';
 import TargetableSet from '../targetables/TargetableSet';
+import registerRootComponents from './registerRootComponents';
 
 /**
  * Builtin targets are called manually from inside Buildpack code. Buildpack
@@ -10,7 +11,7 @@ import TargetableSet from '../targetables/TargetableSet';
  */
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-export default (targets: TargetProvider) => {
+export default (targets: TargetProvider<'@magento/pwa-buildpack'>) => {
     const buildpack = targets.of('@magento/pwa-buildpack');
 
     //
@@ -49,4 +50,6 @@ export default (targets: TargetProvider) => {
             desc: 'whether this thing should be debugging'
         }
     ]);
+
+    registerRootComponents(targets);
 }

@@ -3,7 +3,7 @@ import { createHtmlPlugin } from 'vite-plugin-html';
 // @ts-ignore
 import { buildpackPlugin } from '@magento/pwa-buildpack';
 // @ts-ignore
-import packageJson from './package.json';
+import * as packageJson from './package.json';
 
 const importerFactory = `function () {
             return async function getLocale(locale) {
@@ -60,6 +60,7 @@ export default defineConfig(async ({ mode }): Promise<UserConfig> =>  {
             host: '127.0.0.1',
             port: 8080,
         },
+        logLevel: 'error',
 
         plugins: [
             createHtmlPlugin({
@@ -70,7 +71,8 @@ export default defineConfig(async ({ mode }): Promise<UserConfig> =>  {
                 buildbus: {
                     projectName: packageJson.name,
                     // @ts-ignore
-                    trustedVendors: packageJson['pwa-studio'].trustedVendors ?? []
+                    trustedVendors: packageJson['pwa-studio'].trustedVendors ?? [],
+                    logLevel: 'info'
                 }
             })
         ],

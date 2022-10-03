@@ -41,7 +41,7 @@ type FeatureTuple = [string, string|undefined, Buildpack.SpecialFeatures];
  * @param {Buildpack/WebpackTools~MagentoResolver} resolver - Enhanced resolver
  * @returns {hasSpecialFlags}
  */
-export default async function getSpecialFlags(special: Record<string, Buildpack.SpecialFeatures> = {}, bus: BuildBus, resolver: PluginContext) {
+export default async function getSpecialFlags(special: Buildpack.FeaturesByModule = {}, bus: BuildBus, resolver: PluginContext) {
     bus.getTargetsOf('@magento/pwa-buildpack').specialFeatures.call(special);
 
     // Resolve every module listed in the `special` object into an absolute

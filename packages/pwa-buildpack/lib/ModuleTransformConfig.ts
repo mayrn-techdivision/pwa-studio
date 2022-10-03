@@ -1,6 +1,7 @@
 import path from 'path';
-import { name as buildpackName } from '../package.json';
+import packageJson from '../package.json';
 import { TransformRequestWithRequestor as TransformRequest, TransformType, TransformTypes } from './targetables/types';
+const buildpackName = packageJson.name;
 
 export type LoaderOptions = Record<TransformTypes, Record<string, Record<string, TransformRequest[]>>>;
 

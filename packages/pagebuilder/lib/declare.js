@@ -4,7 +4,7 @@
  * Their implementations are found in `./intercept.js`.
  *
  */
-module.exports = targets => {
+export default targets => {
     targets.declare({
         /**
          * Provides access to Pagebuilder custom content types
@@ -26,7 +26,7 @@ module.exports = targets => {
          */
         customContentTypes: new targets.types.Sync(['contentTypes'])
     });
-};
+}
 
 /** Type definitions related to: customContentTypeRenderers */
 

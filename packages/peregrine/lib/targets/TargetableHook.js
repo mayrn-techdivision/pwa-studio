@@ -1,11 +1,11 @@
-const { Targetables } = require('@magento/pwa-buildpack');
+import { Targetables } from '@magento/pwa-buildpack';
 
 /**
  * Interface for the individual hooks.
  * It is a wrapper class for `TargetableESModule`, preserving the API of the
  * previous target implementation.
  */
-class TargetableHook {
+export default class TargetableHook {
     /**
      * Creates a TargetableHook for one hook or talon module.
      * @param {string} talonPath - Resolvable path to the hook file, e.g. `@magento/peregrine/lib/hooks/useCarousel'.
@@ -37,5 +37,3 @@ class TargetableHook {
         return this._talonModule.wrapWithFile(this._exportName, wrapperModule);
     }
 }
-
-module.exports = TargetableHook;

@@ -1,17 +1,17 @@
 /**
  * @module VeniaUI/Targets
  */
-const { Targetables } = require('@magento/pwa-buildpack');
-const CategoryListProductAttributes = require('./CategoryListProductAttributes');
-const RichContentRendererList = require('./RichContentRendererList');
-const makeRoutesTarget = require('./makeRoutesTarget');
-const CheckoutPagePaymentsList = require('./CheckoutPagePaymentsList');
-const SavedPaymentTypes = require('./SavedPaymentTypes');
-const EditablePaymentTypes = require('./EditablePaymentTypes');
-const SummaryPaymentTypes = require('./SummaryPaymentTypes');
-const RootShimmerTypes = require('./RootShimmerTypes');
+import { Targetables } from '@magento/pwa-buildpack';
+import CategoryListProductAttributes from './CategoryListProductAttributes';
+import RichContentRendererList from './RichContentRendererList';
+import makeRoutesTarget from './makeRoutesTarget';
+import CheckoutPagePaymentsList from './CheckoutPagePaymentsList';
+import SavedPaymentTypes from './SavedPaymentTypes';
+import EditablePaymentTypes from './EditablePaymentTypes';
+import SummaryPaymentTypes from './SummaryPaymentTypes';
+import RootShimmerTypes from './RootShimmerTypes';
 
-module.exports = veniaTargets => {
+export default veniaTargets => {
     const venia = Targetables.using(veniaTargets);
 
     venia.setSpecialFeatures(
@@ -68,4 +68,4 @@ module.exports = veniaTargets => {
         importPath:
             '@magento/venia-ui/lib/RootComponents/Category/categoryContent.shimmer'
     });
-};
+}

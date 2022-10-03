@@ -17,6 +17,4 @@
  * or modify functionality from its dependencies.
  */
 
-function localIntercept() {}
-
-module.exports = localIntercept;
+export default function localIntercept() {}

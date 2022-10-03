@@ -8,7 +8,7 @@
  * An instance of this class is made available when you use Pagebuilder's
  * `customContentTypes` target.
  */
-class CustomContentTypeList {
+export default class CustomContentTypeList {
     /** @hideconstructor */
     constructor(pagebuilder) {
         const registry = this;
@@ -46,5 +46,3 @@ class CustomContentTypeList {
         );
     }
 }
-
-module.exports = CustomContentTypeList;

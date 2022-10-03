@@ -8,7 +8,7 @@
  * An instance of this class is made available when you use VeniaUI's
  * `summaryPagePaymentTypes` target.
  */
-class SummaryPaymentTypes {
+export default class SummaryPaymentTypes {
     /** @hideconstructor */
     constructor(venia) {
         const registry = this;
@@ -25,5 +25,3 @@ class SummaryPaymentTypes {
         this._methods.add(`import ${paymentCode} from '${importPath}'`);
     }
 }
-
-module.exports = SummaryPaymentTypes;

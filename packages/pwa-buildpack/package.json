@@ -16,7 +16,7 @@
   "files": [
     "dist"
   ],
-  "type": "commonjs",
+  "type": "module",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "exports": {
@@ -119,8 +119,8 @@
   },
   "pwa-studio": {
     "targets": {
-      "declare": "./lib/BuildBus/declare-base",
-      "intercept": "./lib/BuildBus/intercept-base"
+      "declare": "./lib/targets/declare-base",
+      "intercept": "./lib/targets/intercept-base"
     }
   }
 }

@@ -1,5 +1,8 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import {fileURLToPath} from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Normal `require` doesn't know what to do with .graphql files, so this helper function
@@ -11,7 +14,7 @@ const path = require('path');
  */
 const requireGraphQL = filePath => {
     const absolutePath = path.resolve(__dirname, filePath);
-    return stripComments(fs.readFileSync(absolutePath.replace('/dist', ''), { encoding: 'utf8' }));
+    return stripComments(fs.readFileSync(absolutePath.replace(/(\/pwa-buildpack)(?:\/\w+){0,2}(\/lib)/, '$1$2'), { encoding: 'utf8' }));
 };
 
 const singleLineCommentRegex = /(^#.*\n)/gm;
@@ -19,20 +22,12 @@ const stripComments = string => {
     return string.replace(singleLineCommentRegex, '');
 };
 
-// Import all the build-time queries.
-const getMediaUrl = requireGraphQL('../queries/getStoreMediaUrl.graphql');
-const getStoreConfigData = requireGraphQL(
+// Import and export all the build-time queries.
+export const getMediaUrl = requireGraphQL('../queries/getStoreMediaUrl.graphql');
+export const getStoreConfigData = requireGraphQL(
     '../queries/getStoreConfigData.graphql'
 );
-const getAvailableStoresConfigData = requireGraphQL(
+export const getAvailableStoresConfigData = requireGraphQL(
     '../queries/getAvailableStoresConfigData.graphql'
 );
-const getSchemaTypes = requireGraphQL('../queries/getSchemaTypes.graphql');
-
-// Export the queries for use by the rest of buildpack.
-module.exports = {
-    getMediaUrl,
-    getStoreConfigData,
-    getAvailableStoresConfigData,
-    getSchemaTypes
-};
+export const getSchemaTypes = requireGraphQL('../queries/getSchemaTypes.graphql');

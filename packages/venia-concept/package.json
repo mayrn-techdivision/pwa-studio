@@ -5,6 +5,7 @@
     "access": "public"
   },
   "description": "Venia PWA Concept Storefront for Magento 2",
+  "type": "module",
   "main": "src/index.js",
   "browser": {
     "@magento/venia-drivers": "src/drivers"
@@ -27,7 +28,7 @@
     "start:debug": "node --inspect-brk ./node_modules/.bin/webpack-dev-server --progress --color --env.mode development",
     "test": "yarn run -s prettier:check && yarn run -s lint && jest",
     "watch:old": "webpack-dev-server --progress --color --env.mode development",
-    "watch": "NODE_OPTIONS=--enable-source-maps vite serve",
+    "watch": "NODE_OPTIONS='--enable-source-maps --experimental-specifier-resolution=node' vite serve",
     "prewatch": "tsc --build tsconfig.vite.json"
   },
   "repository": "github:magento/pwa-studio",

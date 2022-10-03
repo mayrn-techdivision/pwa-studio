@@ -92,8 +92,8 @@ class MockedBuildBus extends BuildBus {
         if (!buildpackDeclared) {
             pertaining.unshift({
                 name: '@magento/pwa-buildpack',
-                declare: require('../../BuildBus/declare-base'),
-                intercept: require('../../BuildBus/intercept-base')
+                declare: require('../../targets/declare-base'),
+                intercept: require('../../targets/intercept-base')
             });
         }
         return pertaining;

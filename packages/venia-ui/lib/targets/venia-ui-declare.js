@@ -4,7 +4,7 @@
  * Their implementations are found in `./venia-ui-intercept.js`.
  *
  */
-module.exports = targets => {
+export default targets => {
     targets.declare({
         /**
          * Provides access to the list of rendering strategies used by the
@@ -159,7 +159,7 @@ module.exports = targets => {
 
         rootShimmerTypes: new targets.types.Sync(['rootShimmerTypes'])
     });
-};
+}
 
 /** Type definitions related to: richContentRenderers */
 

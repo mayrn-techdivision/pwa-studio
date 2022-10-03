@@ -8,7 +8,7 @@
  * An instance of this class is made available when you use VeniaUI's
  * `checkoutPagePaymentTypes` target.
  */
-class CheckoutPagePaymentsList {
+export default class CheckoutPagePaymentsList {
     /** @hideconstructor */
     constructor(venia) {
         const registry = this;
@@ -25,5 +25,3 @@ class CheckoutPagePaymentsList {
         this._methods.add(`import ${paymentCode} from '${importPath}'`);
     }
 }
-
-module.exports = CheckoutPagePaymentsList;

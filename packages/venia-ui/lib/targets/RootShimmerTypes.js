@@ -10,7 +10,7 @@
  * used to render the appropriate root shimmer component during page transition
  * when using the useInternalLink hook.
  */
-class RootShimmerTypes {
+export default class RootShimmerTypes {
     /** @hideconstructor */
     constructor(venia) {
         const registry = this;
@@ -27,5 +27,3 @@ class RootShimmerTypes {
         this._shimmer.add(`import ${shimmerType} from '${importPath}'`);
     }
 }
-
-module.exports = RootShimmerTypes;

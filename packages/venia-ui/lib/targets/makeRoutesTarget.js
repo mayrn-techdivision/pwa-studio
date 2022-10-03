@@ -1,11 +1,11 @@
-function makeRoutesTarget(venia) {
+export default function makeRoutesTarget(venia) {
     const routeList = venia.reactComponent(
         '@magento/venia-ui/lib/components/Routes/routes.jsx',
         async ({ routes }, self) => addRoutes(self, await routes.promise([]))
     );
 
     // Add our own default routes!
-    addRoutes(routeList, require('../defaultRoutes.json'));
+    import('../defaultRoutes.json').then(json => addRoutes(routeList, json));
 }
 
 function addRoutes(routeList, routes) {
@@ -35,5 +35,3 @@ function addRoutes(routeList, routes) {
         );
     }
 }
-
-module.exports = makeRoutesTarget;

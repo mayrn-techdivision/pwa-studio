@@ -3,7 +3,7 @@ import TargetableESModule from './TargetableESModule';
 import TargetableESModuleArray from './TargetableESModuleArray';
 import TargetableESModuleObject from './TargetableESModuleObject';
 import { Buildpack } from './targets';
-import TargetProvider, { UndefinedTargets } from '../BuildBus/TargetProvider';
+import TargetProvider, { TargetsId, Targets } from '../BuildBus/TargetProvider';
 import Targetables from './Targetables';
 import TargetableReactComponent from './TargetableReactComponent';
 import EnvVarDefinition = Buildpack.EnvVarDefinition;
@@ -16,25 +16,27 @@ import SpecialFeatures = Buildpack.SpecialFeatures;
 type TargetableCls<T extends TargetableModule
     = TargetableModule> = new(...args: ConstructorParameters<typeof TargetableModule>) => T;
 
-type PublishCallback<T extends TargetableModule = TargetableModule> = (this: T, ownTargets: UndefinedTargets, self: T) => unknown;
+type PublishCallback<T extends TargetableModule = TargetableModule, N extends TargetsId = string> = (this: T, ownTargets: Targets<N>, self: T) => unknown;
 
-type Publisher<T extends TargetableModule = TargetableModule> = {
-    publish: PublishCallback<T>
-} | PublishCallback<T>;
+type Publisher<T extends TargetableModule = TargetableModule, N extends TargetsId = string> = {
+    publish: PublishCallback<T, N>
+} | PublishCallback<T, N>;
 
-interface ModuleConfig<T extends TargetableModule = TargetableModule> {
+interface ModuleConfig<T extends TargetableModule = TargetableModule, N extends TargetsId = string> {
     module: string;
-    publish: PublishCallback<T>;
+    publish: PublishCallback<T, N>;
 }
 
-type Extant<T extends TargetableModule = TargetableModule> = [T, ModuleConfig<T>];
+type ModuleConfigParams<T extends TargetableModule, N extends TargetsId = string> = [string, Publisher<T, N>] | [ModuleConfig<T, N>];
+
+type Extant<T extends TargetableModule = TargetableModule, N extends TargetsId = string> = [T, ModuleConfig<T, N>];
 
 /**
  * A factory and manager for Targetable instances.
  * This class wraps around a TargetProvider, which identifies it as "your"
  * Targetable and enables automatic interception of targets.
  */
-export default class TargetableSet extends Targetables<'@magento/pwa-buildpack'> {
+export default class TargetableSet<N extends TargetsId = string> extends Targetables<'@magento/pwa-buildpack', N> {
     static Module = TargetableModule;
     static ESModule = TargetableESModule;
     static ESModuleArray = TargetableESModuleArray;
@@ -50,12 +52,12 @@ export default class TargetableSet extends Targetables<'@magento/pwa-buildpack'>
      * @param {TargetProvider} targets - TargetProvider for the current dependency. This is the object passed by BuildBus to an intercept function.
      * @returns {TargetableSet}
      */
-    static using(targets: TargetProvider) {
+    static using<N extends TargetsId = string>(targets: TargetProvider<N>) {
         return new TargetableSet(targets);
     }
 
     /** @hideconstructor  */
-    constructor(targetProvider: TargetProvider) {
+    constructor(targetProvider: TargetProvider<N>) {
         super(targetProvider, '@magento/pwa-buildpack');
         this._bind();
     }
@@ -67,8 +69,8 @@ export default class TargetableSet extends Targetables<'@magento/pwa-buildpack'>
      * the module will automatically bind to `builtins.transformModules`.
      * @returns {TargetableModule} Returns an instance of TargetableModule.
      */
-    module(modulePath: string, publisher: Publisher<TargetableModule>) {
-        return this._provide(TargetableSet.Module, modulePath, publisher);
+    module(...configParams: ModuleConfigParams<TargetableModule, N>) {
+        return this._provide(TargetableSet.Module, ...configParams);
     }
 
     /**
@@ -78,8 +80,8 @@ export default class TargetableSet extends Targetables<'@magento/pwa-buildpack'>
      * the module will automatically bind to `builtins.transformModules`.
      * @returns {TargetableESModule} Returns an instance of TargetableESModule.
      */
-    esModule(modulePath: string, publisher: Publisher<TargetableESModule>) {
-        return this._provide(TargetableSet.ESModule, modulePath, publisher);
+    esModule(...configParams: ModuleConfigParams<TargetableESModule, N>) {
+        return this._provide(TargetableSet.ESModule, ...configParams);
     }
 
     /**
@@ -89,8 +91,8 @@ export default class TargetableSet extends Targetables<'@magento/pwa-buildpack'>
      * the module will automatically bind to `builtins.transformModules`.
      * @returns {TargetableESModuleArray} Returns an instance of TargetableESModuleArray.
      */
-    esModuleArray(modulePath: string, publisher: Publisher<TargetableESModuleArray>) {
-        return this._provide(TargetableSet.ESModuleArray, modulePath, publisher);
+    esModuleArray(...configParams: ModuleConfigParams<TargetableESModuleArray, N>) {
+        return this._provide(TargetableSet.ESModuleArray, ...configParams);
     }
 
     /**
@@ -100,8 +102,8 @@ export default class TargetableSet extends Targetables<'@magento/pwa-buildpack'>
      * the module will automatically bind to `builtins.transformModules`.
      * @returns {TargetableESModuleObject} Returns an instance of TargetableESModuleObject.
      */
-    esModuleObject(modulePath: string, publisher: Publisher<TargetableESModuleObject>) {
-        return this._provide(TargetableSet.ESModuleObject, modulePath, publisher);
+    esModuleObject(...configParams: ModuleConfigParams<TargetableESModuleObject, N>) {
+        return this._provide(TargetableSet.ESModuleObject, ...configParams);
     }
 
     /**
@@ -111,8 +113,8 @@ export default class TargetableSet extends Targetables<'@magento/pwa-buildpack'>
      * the module will automatically bind to `builtins.transformModules`.
      * @returns {TargetableReactComponent} Returns an instance of TargetableReactComponent
      */
-    reactComponent(modulePath: string, publisher: Publisher<TargetableReactComponent>) {
-        return this._provide(TargetableSet.ReactComponent, modulePath, publisher);
+    reactComponent(...configParams: ModuleConfigParams<TargetableReactComponent, N>) {
+        return this._provide(TargetableSet.ReactComponent, ...configParams);
     }
 
     //
@@ -186,18 +188,20 @@ export default class TargetableSet extends Targetables<'@magento/pwa-buildpack'>
         );
     }
 
-    _normalizeConfig<T extends TargetableModule>(modulePathOrConfig: string | ModuleConfig, publisher: Publisher<T>): ModuleConfig<T> {
-        return typeof modulePathOrConfig === 'string'
-            ? {
-                module: modulePathOrConfig,
-                publish: typeof publisher === 'function' ? publisher : publisher.publish
-            }
-            : modulePathOrConfig;
+    _normalizeConfig<T extends TargetableModule>(...configParams: ModuleConfigParams<T, N>): ModuleConfig<T, N> {
+        if (typeof configParams[0] !== 'string') {
+            return configParams[0];
+        }
+        const [modulePath, publisher] = configParams as [string, Publisher<T>];
+        return {
+            module: modulePath,
+            publish: typeof publisher === 'function' ? publisher : publisher.publish
+        }
     }
 
-    _provide<T extends TargetableModule = TargetableModule>(Targetable: TargetableCls<T>, modulePath: string, publisher: Publisher<T>) {
-        const config = this._normalizeConfig(modulePath, publisher);
-        let extant = this._connectedFiles.get(config.module) as Extant<T>|undefined;
+    _provide<T extends TargetableModule>(Targetable: TargetableCls<T>, ...configParams: ModuleConfigParams<T, N>) {
+        const config = this._normalizeConfig(...configParams);
+        let extant = this._connectedFiles.get(config.module) as Extant<T, N>|undefined;
         if (!extant) {
             const targetable = new Targetable(
                 config.module,
@@ -211,7 +215,7 @@ export default class TargetableSet extends Targetables<'@magento/pwa-buildpack'>
             return instance;
         }
         throw new Error(
-            `Cannot target the file "${modulePath}" using "${
+            `Cannot target the file "${config.module}" using "${
                 Targetable.name
             }", because it has already been targeted by the ${
                 instance.constructor.name

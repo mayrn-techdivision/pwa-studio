@@ -4,6 +4,7 @@
   "publishConfig": {
     "access": "public"
   },
+  "type": "module",
   "description": "The core runtime of Magento PWA",
   "main": "lib/index.js",
   "scripts": {

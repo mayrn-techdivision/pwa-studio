@@ -1,10 +1,12 @@
 //@ts-nocheck
-import graphQLQueries from '../queries';
+import * as graphQLQueries from '../queries/';
 import fetch from 'node-fetch';
 import https from 'https';
 
 // To be used with `node-fetch` in order to allow self-signed certificates.
 import { makeFileLogger } from '../util/debug';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
 const debug = makeFileLogger(__filename);
 
 const httpsAgent = new https.Agent({ rejectUnauthorized: false });

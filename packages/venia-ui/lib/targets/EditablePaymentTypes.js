@@ -11,7 +11,7 @@
  * The SavedPaymentMethod declarations collected as part of this target will be
  * used to render the saved payment methods section in My Account.
  */
-class EditablePaymentTypes {
+export default class EditablePaymentTypes {
     /** @hideconstructor */
     constructor(venia) {
         const registry = this;
@@ -28,5 +28,3 @@ class EditablePaymentTypes {
         this._methods.add(`import ${paymentCode} from '${importPath}'`);
     }
 }
-
-module.exports = EditablePaymentTypes;

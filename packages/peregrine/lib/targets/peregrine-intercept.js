@@ -1,9 +1,12 @@
-const path = require('path');
-const HookInterceptorSet = require('./HookInterceptorSet');
+import HookInterceptorSet from './HookInterceptorSet';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const packageDir = path.resolve(__dirname, '../../');
 
-module.exports = targets => {
+export default targets => {
     const builtins = targets.of('@magento/pwa-buildpack');
 
     builtins.specialFeatures.tap(featuresByModule => {
@@ -41,4 +44,4 @@ module.exports = targets => {
             })
         );
     });
-};
+}

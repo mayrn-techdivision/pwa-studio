@@ -8,7 +8,7 @@
  * An instance of this class is made available when you use VeniaUI's
  * `richContentRenderers` target.
  */
-class RichContentRendererList {
+export default class RichContentRendererList {
     /** @hideconstructor */
     constructor(venia) {
         const registry = this;
@@ -45,5 +45,3 @@ class RichContentRendererList {
         );
     }
 }
-
-module.exports = RichContentRendererList;

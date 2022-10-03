@@ -11,7 +11,7 @@
  * The CategoryListProductAttributes declarations collected as part of this target will be
  * used to render the gallery item component in category lists.
  */
-class CategoryListProductAttributes {
+export default class CategoryListProductAttributes {
     /** @hideconstructor */
     constructor(venia) {
         const registry = this;
@@ -33,5 +33,3 @@ class CategoryListProductAttributes {
         );
     }
 }
-
-module.exports = CategoryListProductAttributes;

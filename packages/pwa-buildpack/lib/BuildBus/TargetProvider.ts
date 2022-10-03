@@ -2,7 +2,7 @@ import Trackable from './Trackable';
 import { appearsToBeTapable, getTapableType, types } from './mapHooksToTargets';
 import BuildBus from './BuildBus';
 import { AnyTapable, Phase, SyncOrAsyncTapable } from './types';
-import Target from './Target';
+import Target, { ExternalTarget } from './Target';
 import { Buildpack } from '../targetables/targets';
 
 export interface TargetProviderInterface {
@@ -20,13 +20,17 @@ export type Targets<T extends TargetsId> = T extends keyof Buildpack.Targets ? D
 
 export type Declarations = Record<string, SyncOrAsyncTapable>
 
-export default class TargetProvider extends Trackable implements TargetProviderInterface {
+const isSameTargetsId = <T extends TargetsId>(targetProvider: TargetProvider, name: T): targetProvider is TargetProvider<T> => {
+    return targetProvider.name === name;
+}
+
+export default class TargetProvider<N extends TargetsId = string> extends Trackable implements TargetProviderInterface {
     /**
      * The phase currently being executed. Either `declare` or `intercept`.
      */
     phase: Phase | null;
     file: string | null;
-    name: string;
+    name: N;
     types = types;
     private readonly getExternalTargets: GetExternalTargets;
     tapables: Record<string, AnyTapable> = {};
@@ -34,9 +38,9 @@ export default class TargetProvider extends Trackable implements TargetProviderI
     /**
      * The targets this package has declared in the `declare` phase.
      */
-    own: UndefinedTargets = {};
+    own: Targets<N> = {} as Targets<N>;
 
-    constructor(bus: BuildBus, depName: string, getExternalTargets: GetExternalTargets) {
+    constructor(bus: BuildBus, depName: N, getExternalTargets: GetExternalTargets) {
         super();
         this.attach(depName, bus);
         this.getExternalTargets = getExternalTargets;
@@ -45,8 +49,8 @@ export default class TargetProvider extends Trackable implements TargetProviderI
         this.file = null;
     }
 
-    linkTarget(requestor: TargetProvider, targetName: string, tapable: AnyTapable) {
-        const TargetClass = requestor === this? Target : Target.External;
+    linkTarget(requestor: TargetProvider, targetName: string, tapable: AnyTapable): Target|ExternalTarget {
+        const TargetClass = requestor === this ? Target : Target.External;
         return new TargetClass(
             this,
             requestor,
@@ -78,6 +82,7 @@ export default class TargetProvider extends Trackable implements TargetProviderI
                 tapableType: getTapableType(hook)
             });
             this.tapables[targetName] = hook;
+            // @ts-ignore
             this.own[targetName] = this.linkTarget(this, targetName, hook);
         }
         return declarations;
@@ -96,9 +101,12 @@ export default class TargetProvider extends Trackable implements TargetProviderI
                 }
             );
         }
-        if (depName === this.name) {
-            return this.own as Targets<T>;
+
+        // need a special type predicate here, otherwise TS will complain that T and N might not overlap
+        if (isSameTargetsId(this, depName)) {
+            return this.own;
         }
+
         if (!this.intercepted[depName]) {
             this.intercepted[depName] = this.getExternalTargets(
                 this,

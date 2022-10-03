@@ -12,7 +12,7 @@ const fs = require('fs');
 const stat = jest.spyOn(fs, 'stat');
 
 const { SyncHook } = require('tapable');
-const declareBase = require('../../BuildBus/declare-base');
+const declareBase = require('../../targets/declare-base');
 const pertain = require('pertain');
 const pkgDir = require('pkg-dir');
 const WebpackAssetsManifest = require('webpack-assets-manifest');

@@ -5,6 +5,7 @@
     "access": "public"
   },
   "description": "PageBuilder extension for PWA Studio",
+  "type": "module",
   "main": "lib/index.js",
   "browser": {
     "@magento/venia-drivers": "@magento/venia-ui/lib/drivers"

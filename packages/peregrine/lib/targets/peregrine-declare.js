@@ -4,7 +4,7 @@
  * Their implementations are found in `./peregrine-intercept.js`.
  *
  */
-module.exports = targets => {
+export default targets => {
     targets.declare({
         /**
          * Provides access to Peregrine React hooks.
@@ -61,7 +61,7 @@ module.exports = targets => {
          */
         talons: new targets.types.AsyncSeries(['talons'])
     });
-};
+}
 
 /** Type definitions related to: talons */
 
